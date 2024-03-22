@@ -6,7 +6,7 @@ from torch.utils.data import TensorDataset, DataLoader
 #from model_transformer import TransformerEncoder
 from model_pytorch import CrossSourceModel
 from sklearn.metrics import f1_score, accuracy_score
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
 
@@ -51,7 +51,9 @@ method = sys.argv[4]
 folder_name = None
 folder_name = dir_name = dir_+"/OUR_%s_%s"%(first_prefix, method)
 
-first_enc = None
+first_enc = hashPREFIX2SOURCE[first_prefix]
+second_enc = hashPREFIX2SOURCE[seocnd_prefix]
+'''
 second_enc = None
 if dir_ == "PAVIA_UNIVERSITY":
     first_enc = 'hyper'
@@ -59,7 +61,7 @@ if dir_ == "PAVIA_UNIVERSITY":
 elif dir_ == 'SUNRGBD' or dir_ == 'EUROSAT':
     first_enc = 'image'
     second_enc = 'image'
-
+'''
 first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
 second_data = np.load("%s/%s_data_normalized.npy"%(dir_,seocnd_prefix))
 labels = np.load("%s/labels.npy"%dir_)

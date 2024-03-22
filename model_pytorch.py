@@ -7,28 +7,31 @@ from torchvision.models import resnet18#, resnet50
 import numpy as np
 
 
+
 class CrossSourceModel(torch.nn.Module):
     def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
         super(CrossSourceModel, self).__init__()
         self.first_enc = None
         self.second_enc = None
 
-        if f_encoder == 'image':
+        if f_encoder == 'image' or f_encoder == 'spectro':
             first_enc = resnet18(weights=None)
             first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
         elif f_encoder == 'hyper':
             self.first_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif f_encoder == 'mnist' :
+            self.first_enc = ModelEncoderLeNet()
 
-        if s_encoder== 'image':
+        if s_encoder== 'image' or s_encoder == 'spectro':
             second_enc = resnet18(weights=None)
             second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
         elif s_encoder == 'hyper':
             self.second_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif s_encoder == "mnist":
+            self.second_enc = ModelEncoderLeNet()
 
-        #self.task_cl = FC_Classifier(emb_dim, num_classes)
-        #self.task_dom = FC_Classifier(emb_dim, 2)
         self.task_dom = nn.LazyLinear(2)
         self.task_cl = nn.LazyLinear(num_classes)
 
@@ -58,12 +61,19 @@ class CrossSourceModel(torch.nn.Module):
 
 
 class MonoSourceModel(torch.nn.Module):
-    def __init__(self, input_channel_first=4, num_classes=10):
+    def __init__(self, input_channel_first=4, encoder='image', num_classes=10):
         super(MonoSourceModel, self).__init__()
-
-        first_enc = resnet18(weights=None)
-        first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
-        self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
+        
+        self.first_enc = None
+        if encoder == 'image' or encoder == 'spectro':
+            first_enc = resnet18(weights=None)
+            first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
+            self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
+        elif encoder == 'hyper':
+            self.first_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif encoder == 'mnist' :
+            #self.first_enc = ModelEncoderMNIST()
+            self.first_enc = ModelEncoderLeNet()
 
         self.task_cl = nn.LazyLinear(num_classes)
         
@@ -97,6 +107,63 @@ class ModelEncoderHyper(torch.nn.Module):
         return emb
 
 
+class ModelEncoderMNIST(nn.Module):
+    # network structure
+    def __init__(self):
+        super(ModelEncoderMNIST, self).__init__()
+        self.conv1 = nn.LazyConv2d(32, 3, padding=1)
+        self.conv2 = nn.LazyConv2d(64, 3, padding=1)
+        self.fc1 = nn.LazyLinear(1024)
+
+    def forward(self, x):
+        '''
+        One forward pass through the network.
+        
+        Args:
+            x: input
+        '''
+        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+        #print(x.shape)
+        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
+        #print(x.shape)
+        x = torch.flatten(x, start_dim=1)
+        #print(x.shape)
+        #x = x.view(-1, self.num_flat_features(x))
+        #exit()
+        x = F.relu(self.fc1(x))
+        #print(x.shape)
+        return x
+
+
+class ModelEncoderLeNet(nn.Module):
+    # network structure
+    def __init__(self):
+        super(ModelEncoderLeNet, self).__init__()
+        self.conv1 = nn.LazyConv2d(6, 5, padding=2)
+        self.conv2 = nn.LazyConv2d(16, 5)
+        self.fc1 = nn.LazyLinear(512)
+        #self.fc1   = nn.LazyLinear(120)
+        #self.fc2   = nn.LazyLinear(84)
+        #self.fc3   = nn.LazyLinear(10)
+
+    def forward(self, x):
+        '''
+        One forward pass through the network.
+        
+        Args:
+            x: input
+        '''
+        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+        #print(x.shape)
+        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
+        #print(x.shape)
+        x = torch.flatten(x, start_dim=1)
+        #print(x.shape)
+        #x = x.view(-1, self.num_flat_features(x))
+        x = F.relu(self.fc1(x))
+        #print(x.shape)
+        return x
+
 
 class ModelHYPER(torch.nn.Module):
     def __init__(self, hidden_dims=512, drop_probability=0.5, num_classes=10):
@@ -113,19 +180,32 @@ class ModelHYPER(torch.nn.Module):
 
 
 class MultiSourceModel(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, fusion_type='CONCAT'):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', fusion_type='CONCAT'):
+    #def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, fusion_type='CONCAT'):
         super(MultiSourceModel, self).__init__()
 
-        self.fusion_type = fusion_type
-        first_enc = resnet18(weights=None)
-        first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
-        self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
+        self.first_enc = None
+        self.second_enc = None
+        self.fusion_type  = fusion_type
+        if f_encoder == 'image' or f_encoder == 'spectro':
+            first_enc = resnet18(weights=None)
+            first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
+            self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
+        elif f_encoder == 'hyper':
+            self.first_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif f_encoder == 'mnist' :
+            self.first_enc = ModelEncoderLeNet()
 
-        second_enc = resnet18(weights=None)
-        second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
-        self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
-
-        #self.task_cl = FC_Classifier(emb_dim, num_classes)
+        if s_encoder== 'image' or s_encoder == 'spectro':
+            second_enc = resnet18(weights=None)
+            second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
+            self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
+        elif s_encoder == 'hyper':
+            self.second_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif s_encoder == "mnist" :
+            self.first_enc = ModelEncoderLeNet()
+        
+        
         self.task_cl = nn.LazyLinear(num_classes)
         
     def forward(self, x):

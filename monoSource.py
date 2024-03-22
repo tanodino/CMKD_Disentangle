@@ -12,7 +12,7 @@ from model_pytorch import MonoSourceModel, ModelHYPER
 import time
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
 
@@ -98,10 +98,10 @@ dataloader_test = createDataLoader(test_f_data, test_labels, False, TRAIN_BATCH_
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 model = None
-if dir_ == "PAVIA_UNIVERSITY":
-    model = ModelHYPER(num_classes=n_classes)
-else:
-    model = MonoSourceModel(input_channel_first=first_data.shape[1], num_classes=n_classes)
+#if dir_ == "PAVIA_UNIVERSITY":
+#    model = ModelHYPER(num_classes=n_classes)
+#else:
+model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[prefix], num_classes=n_classes)
 
 model = model.to(device)
 

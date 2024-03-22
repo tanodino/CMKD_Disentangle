@@ -16,7 +16,7 @@ from sklearn.utils import shuffle
 from model_pytorch import CrossSourceModel, SupervisedContrastiveLoss
 import time
 from sklearn.metrics import f1_score
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
 def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='image'):
@@ -24,7 +24,7 @@ def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='ima
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
     dataest = None
-    if type_data == 'image':
+    if type_data == 'image' or type_data=='mnist':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
     else:
         dataset = TensorDataset(x_tensor, y_tensor)
@@ -88,7 +88,13 @@ if not os.path.exists(dir_name):
 
 output_file = dir_name+"/%s.pth"%(run_id)
 
+first_enc = hashPREFIX2SOURCE[first_prefix]
+second_enc = hashPREFIX2SOURCE[second_prefix]
 
+print("first_enc %s"%first_enc)
+print("second_enc %s"%second_enc)
+
+'''
 first_enc = None
 second_enc = None
 if dir_ == "PAVIA_UNIVERSITY":
@@ -97,7 +103,7 @@ if dir_ == "PAVIA_UNIVERSITY":
 elif dir_ == 'SUNRGBD' or dir_ == 'EUROSAT':
     first_enc = 'image'
     second_enc = 'image'
-
+'''
 
 
 #sar_data = np.load("%s/SAR_data_normalized.npy"%dir_)
@@ -137,8 +143,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_enc)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_enc)
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=hashPREFIX2SOURCE[first_prefix])
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=hashPREFIX2SOURCE[second_prefix])
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)
@@ -150,7 +156,7 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-model = CrossSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 

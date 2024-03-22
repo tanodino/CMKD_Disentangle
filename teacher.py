@@ -13,7 +13,7 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
 
@@ -58,6 +58,9 @@ first_prefix = sys.argv[2]
 second_prefix = sys.argv[3]
 run_id = int(sys.argv[4])
 fusion_type = sys.argv[5]
+
+first_enc = hashPREFIX2SOURCE[first_prefix]
+second_enc = hashPREFIX2SOURCE[second_prefix]
 
 
 dir_name = dir_+"/TEACHER_%s"%fusion_type
@@ -105,8 +108,8 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], fusion_type=fusion_type)
+model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=first_enc, s_encoder=second_enc, fusion_type=fusion_type, num_classes=n_classes)
+#model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], fusion_type=fusion_type, num_classes=n_classes)
 model = model.to(device)
 
 

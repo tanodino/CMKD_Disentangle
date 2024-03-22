@@ -13,6 +13,10 @@ EPOCHS = 300
 TH_FIXMATCH = .95
 WARM_UP_EPOCH_EMA = 50
 
+hashPREFIX2SOURCE = {'DEPTH':'image','RGB':'image','MS':'image','SAR':'image','SPECTRO':'image','MNIST':'mnist','FULL':'hyper','HALF':'hyper'}
+
+
+
 class MyRotateTransform():
     def __init__(self, angles: Sequence[int]):
         self.angles = angles

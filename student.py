@@ -13,7 +13,7 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 from kd_losses import kd_loss, dkd_loss, mlkd_loss
 import warnings 
@@ -42,7 +42,7 @@ def getTeacherLogits(dir_, first_prefix, second_prefix, fusion_type, run_id):
     model = None
     if dir_ != "PAVIA_UNIVERSITY":
         dataloader_train = createDataLoaderTrain(train_f_data, train_s_data, train_labels, False, TRAIN_BATCH_SIZE)
-        model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], fusion_type=fusion_type, num_classes=n_classes)
+        model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=hashPREFIX2SOURCE[first_prefix], s_encoder=hashPREFIX2SOURCE[second_prefix], fusion_type=fusion_type, num_classes=n_classes)
     else:
         dataloader_train = createDataLoader(train_f_data, train_labels, False, TRAIN_BATCH_SIZE)
         model = ModelHYPER(num_classes=n_classes)
@@ -197,10 +197,10 @@ dataloader_valid = createDataLoader(valid_f_data, valid_labels, False, TRAIN_BAT
 dataloader_test = createDataLoader(test_f_data, test_labels, False, TRAIN_BATCH_SIZE)
 
 model = None
-if dir_ == "PAVIA_UNIVERSITY":
-    model = ModelHYPER(num_classes=n_classes)
-else:
-    model = MonoSourceModel(input_channel_first=first_data.shape[1], num_classes=n_classes)
+#if dir_ == "PAVIA_UNIVERSITY":
+#    model = ModelHYPER(num_classes=n_classes)
+#else:
+model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[first_prefix], num_classes=n_classes)
 
 model = model.to(device)
 
