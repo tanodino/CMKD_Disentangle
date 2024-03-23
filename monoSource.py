@@ -12,18 +12,19 @@ from model_pytorch import MonoSourceModel, ModelHYPER
 import time
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, VALID_BATCH_SIZE, TEST_BATCH_SIZE
 import os
 
 
-def createDataLoader(x, y, tobeshuffled, BATCH_SIZE):
+def createDataLoader(x, y, tobeshuffled, BATCH_SIZE, type_data='none'):
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
     dataset = None
-    if len(x_tensor.shape) == 4:
+    if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
     else:
         dataset = TensorDataset(x_tensor, y_tensor)
+        
     dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
     return dataloader
 
@@ -86,13 +87,13 @@ n_classes = len(np.unique(labels))
 train_f_data, train_labels = shuffle(train_f_data, train_labels)
 
 #DATALOADER TRAIN
-dataloader_train = createDataLoader(train_f_data, train_labels, True, TRAIN_BATCH_SIZE)
+dataloader_train = createDataLoader(train_f_data, train_labels, True, TRAIN_BATCH_SIZE, type_data=first_data)
 
 #DATALOADER VALID
-dataloader_valid = createDataLoader(valid_f_data, valid_labels, False, TRAIN_BATCH_SIZE)
+dataloader_valid = createDataLoader(valid_f_data, valid_labels, False, VALID_BATCH_SIZE)
 
 #DATALOADER TEST
-dataloader_test = createDataLoader(test_f_data, test_labels, False, TRAIN_BATCH_SIZE)
+dataloader_test = createDataLoader(test_f_data, test_labels, False, TEST_BATCH_SIZE)
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'

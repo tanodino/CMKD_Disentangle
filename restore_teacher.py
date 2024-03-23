@@ -23,7 +23,8 @@ def evaluation(model, dataloader, device, dir_):
             tot_pred.append( pred_npy )
             tot_labels.append( y_batch.cpu().detach().numpy())
 
-    elif dir_ == "EUROSAT" or dir_ == "SUNRGBD" or dir_ == "HANDS" or dir_ == "AV-MNIST":
+    #elif dir_ == "EUROSAT" or dir_ == "SUNRGBD" or dir_ == "HANDS" or dir_ == "AV-MNIST" or dir_ == "TRISTAR":
+    else:
         for x_batch_f, x_batch_s, y_batch in dataloader:
             x_batch_f = x_batch_f.to(device)
             x_batch_s = x_batch_s.to(device)

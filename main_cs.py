@@ -19,12 +19,13 @@ from sklearn.metrics import f1_score
 from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
-def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='image'):
+def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB'):
     #DATALOADER TRAIN
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
     dataest = None
-    if type_data == 'image' or type_data=='mnist':
+    #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST','FULL','HALF', "THERMAL"}
+    if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
     else:
         dataset = TensorDataset(x_tensor, y_tensor)
@@ -143,8 +144,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=hashPREFIX2SOURCE[first_prefix])
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=hashPREFIX2SOURCE[second_prefix])
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)

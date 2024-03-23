@@ -7,13 +7,15 @@ from collections import OrderedDict
 import torchvision.transforms as T 
 
 TRAIN_BATCH_SIZE = 128#512#128#16#512#1024#512
+VALID_BATCH_SIZE = 128
+TEST_BATCH_SIZE = 128
 LEARNING_RATE = 0.0001
 MOMENTUM_EMA = .95
 EPOCHS = 300
 TH_FIXMATCH = .95
 WARM_UP_EPOCH_EMA = 50
 
-hashPREFIX2SOURCE = {'DEPTH':'image','RGB':'image','MS':'image','SAR':'image','SPECTRO':'image','MNIST':'mnist','FULL':'hyper','HALF':'hyper'}
+hashPREFIX2SOURCE = {'DEPTH':'image','RGB':'image','MS':'image','SAR':'image','SPECTRO':'image','MNIST':'mnist','FULL':'hyper','HALF':'hyper', "THERMAL":"thermal"}
 
 
 

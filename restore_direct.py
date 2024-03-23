@@ -69,6 +69,10 @@ tot_f1 = []
 tot_accuracy = []
 for i in range(10):
     print("ITERATION %d"%i)
+    model_weights_fileName = folder_name+"/%d.pth"%i
+    if not os.path.exists(model_weights_fileName):
+        continue
+
     test_idx = np.load("%s/test_idx_%d.npy"%(dir_,i))
 
     test_f_data = first_data[test_idx]
@@ -77,7 +81,7 @@ for i in range(10):
     dataloader_test = createDataLoader(test_f_data, test_labels, False, 512)
     print(len(dataloader_test))
 
-    model.load_state_dict(torch.load(folder_name+"/%d.pth"%i))
+    model.load_state_dict(torch.load(model_weights_fileName))
 
     pred_test, labels_test = evaluation(model, dataloader_test, device, dir_)
     f1_test = f1_score(labels_test, pred_test, average="weighted")

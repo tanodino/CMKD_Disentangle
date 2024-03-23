@@ -6,7 +6,7 @@ from torch.utils.data import TensorDataset, DataLoader
 #from model_transformer import TransformerEncoder
 from model_pytorch import ModelHYPER, MonoSourceModel
 from sklearn.metrics import f1_score, accuracy_score
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
 
 
@@ -58,10 +58,11 @@ n_classes = len(np.unique(labels))
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-if dir_ != "PAVIA_UNIVERSITY":
-    model = MonoSourceModel(input_channel_first=first_data.shape[1], num_classes=n_classes)
-else:
-    model = ModelHYPER(num_classes=n_classes)
+#if dir_ != "PAVIA_UNIVERSITY":
+#    model = MonoSourceModel(input_channel_first=first_data.shape[1], num_classes=n_classes)
+#else:
+#    model = ModelHYPER(num_classes=n_classes)
+model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[first_prefix], num_classes=n_classes)
 model = model.to(device)
 
 

@@ -14,7 +14,7 @@ class CrossSourceModel(torch.nn.Module):
         self.first_enc = None
         self.second_enc = None
 
-        if f_encoder == 'image' or f_encoder == 'spectro':
+        if f_encoder == 'image' or f_encoder == 'spectro' or f_encoder== 'thermal':
             first_enc = resnet18(weights=None)
             first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
@@ -23,7 +23,7 @@ class CrossSourceModel(torch.nn.Module):
         elif f_encoder == 'mnist' :
             self.first_enc = ModelEncoderLeNet()
 
-        if s_encoder== 'image' or s_encoder == 'spectro':
+        if s_encoder== 'image' or s_encoder == 'spectro' or s_encoder== 'thermal':
             second_enc = resnet18(weights=None)
             second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
@@ -65,7 +65,7 @@ class MonoSourceModel(torch.nn.Module):
         super(MonoSourceModel, self).__init__()
         
         self.first_enc = None
-        if encoder == 'image' or encoder == 'spectro':
+        if encoder == 'image' or encoder == 'spectro' or encoder== 'thermal':
             first_enc = resnet18(weights=None)
             first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
@@ -187,7 +187,7 @@ class MultiSourceModel(torch.nn.Module):
         self.first_enc = None
         self.second_enc = None
         self.fusion_type  = fusion_type
-        if f_encoder == 'image' or f_encoder == 'spectro':
+        if f_encoder == 'image' or f_encoder == 'spectro' or f_encoder== 'thermal':
             first_enc = resnet18(weights=None)
             first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
@@ -196,7 +196,7 @@ class MultiSourceModel(torch.nn.Module):
         elif f_encoder == 'mnist' :
             self.first_enc = ModelEncoderLeNet()
 
-        if s_encoder== 'image' or s_encoder == 'spectro':
+        if s_encoder== 'image' or s_encoder == 'spectro' or s_encoder== 'thermal':
             second_enc = resnet18(weights=None)
             second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
             self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
