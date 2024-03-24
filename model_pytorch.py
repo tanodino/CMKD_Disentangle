@@ -66,8 +66,8 @@ class CrossSourceModelV2(torch.nn.Module):
         f_emb_spec = f_emb[:,nfeat//2::]
         s_emb_inv = s_emb[:,0:nfeat//2]
         s_emb_spec = s_emb[:,nfeat//2::]
-        return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
-        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
 
     def pred_firstEnc(self, x):        
         emb = self.first_enc(x).squeeze()
