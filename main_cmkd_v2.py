@@ -144,8 +144,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE*2, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE*2, type_data=second_prefix)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)

@@ -50,10 +50,10 @@ class CrossSourceModelV2(torch.nn.Module):
         self.task_dom = nn.LazyLinear(2)
         self.task_cl = nn.LazyLinear(num_classes)
 
-        self.projHFI = ProjHead(128)
-        self.projHFS = ProjHead(128)
-        self.projHSI = ProjHead(128)
-        self.projHSS = ProjHead(128)
+        self.projHFI = ProjHead(256)
+        self.projHFS = ProjHead(256)
+        self.projHSI = ProjHead(256)
+        self.projHSS = ProjHead(256)
 
 
 
