@@ -10,7 +10,7 @@ import numpy as np
 class ProjHead(torch.nn.Module):
     def __init__(self, out_dim):
         super(ProjHead, self).__init__()
-        self.l1 = nn.LazyLinear(out_dim, bias=False)
+        self.l1 = nn.LazyLinear(out_dim)
         self.bn1 = nn.BatchNorm1d(out_dim)
         self.l2 = nn.LazyLinear(out_dim, bias=False)
 
