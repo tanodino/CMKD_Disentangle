@@ -10,15 +10,15 @@ import numpy as np
 class ProjHead(torch.nn.Module):
     def __init__(self, out_dim):
         super(ProjHead, self).__init__()
-        self.l1 = nn.LazyLinear(out_dim)
-        #self.bn1 = nn.BatchNorm1d(out_dim)
-        #self.l2 = nn.LazyLinear(out_dim)
+        self.l1 = nn.LazyLinear(512)
+        self.bn1 = nn.BatchNorm1d(512)
+        self.l2 = nn.LazyLinear(out_dim)
 
     def forward(self,x):
         proj = self.l1(x)
-        #proj = F.relu(proj)
-        #proj = self.bn1(proj)
-        #proj = self.l2(proj)
+        proj = F.relu(proj)
+        proj = self.bn1(proj)
+        proj = self.l2(proj)
         #gelu_z = F.gelu(proj)
         return  F.relu(proj) #gelu_z - gelu_z.detach() + F.relu(proj).detach()
         #return proj
