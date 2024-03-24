@@ -249,7 +249,7 @@ for epoch in range(EPOCHS):
 
         model.load_state_dict(current_state_dict)
     
-    print("current best %.2f EMA %.2f ORIG %.2f on the validation set"%(global_valid, f1_val_ema, f1_val))
+    print("current best %.2f EMA %.2f ORIG %.2f on the validation set"%(global_valid*100, f1_val_ema*100, f1_val*100))
     if f1_val > global_valid or f1_val_ema > global_valid:
         global_valid = max(f1_val, f1_val_ema)
         if f1_val > f1_val_ema:
