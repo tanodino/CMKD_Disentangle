@@ -7,6 +7,80 @@ from torchvision.models import resnet18#, resnet50
 import numpy as np
 
 
+class ProjHead(torch.nn.Module):
+    def __init__(self, out_dim):
+        super(ProjHead, self).__init__()
+        self.l1 = nn.LazyLinear(out_dim, bias=False)
+        self.bn1 = nn.BatchNorm1d(out_dim)
+        self.l2 = nn.LazyLinear(out_dim, bias=False)
+        self.relu2 = nn.Relu()
+
+    def forward(self,x):
+        proj = self.l1(x)
+        proj = F.relu(proj)
+        proj = self.bn1(proj)
+        proj = self.l2(proj)
+        gelu_z = F.gelu(proj)
+        return gelu_z - gelu_z.detach() + F.relu(proj).detach()
+
+
+class CrossSourceModelV2(torch.nn.Module):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
+        super(CrossSourceModelV2, self).__init__()
+        self.first_enc = None
+        self.second_enc = None
+
+        self.projHFI = ProjHead(128)
+        self.projHFS = ProjHead(128)
+        self.projHSI = ProjHead(128)
+        self.projHSS = ProjHead(128)
+
+        if f_encoder == 'image' or f_encoder == 'spectro' or f_encoder== 'thermal':
+            first_enc = resnet18(weights=None)
+            first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
+            self.first_enc = nn.Sequential(*list(first_enc.children())[:-1])
+        elif f_encoder == 'hyper':
+            self.first_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif f_encoder == 'mnist' :
+            self.first_enc = ModelEncoderLeNet()
+
+        if s_encoder== 'image' or s_encoder == 'spectro' or s_encoder== 'thermal':
+            second_enc = resnet18(weights=None)
+            second_enc.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
+            self.second_enc = nn.Sequential(*list(second_enc.children())[:-1])
+        elif s_encoder == 'hyper':
+            self.second_enc = ModelEncoderHyper(hidden_dims=1024)
+        elif s_encoder == "mnist":
+            self.second_enc = ModelEncoderLeNet()
+
+        self.task_dom = nn.LazyLinear(2)
+        self.task_cl = nn.LazyLinear(num_classes)
+
+
+    def forward(self, x):
+        f_x, s_x = x
+        f_emb = self.first_enc(f_x).squeeze()
+        s_emb = self.second_enc(s_x).squeeze()
+        nfeat = f_emb.shape[1]
+        f_emb_inv = f_emb[:,0:nfeat//2]
+        f_emb_spec = f_emb[:,nfeat//2::]
+        s_emb_inv = s_emb[:,0:nfeat//2]
+        s_emb_spec = s_emb[:,nfeat//2::]
+        return self.ProjHFI(f_emb_inv), self.ProjHFS(f_emb_spec), self.ProjHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+
+    def pred_firstEnc(self, x):        
+        emb = self.first_enc(x).squeeze()
+        nfeat = emb.shape[1]
+        emb_inv = emb[:,0:nfeat//2]
+        return self.task_cl(emb_inv)
+
+    def pred_secondEnc(self, x):        
+        emb = self.second_enc(x).squeeze()
+        nfeat = emb.shape[1]
+        emb_inv = emb[:,0:nfeat//2]
+        return self.task_cl(emb_inv)
+
 
 class CrossSourceModel(torch.nn.Module):
     def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
