@@ -19,9 +19,9 @@ class ProjHead(torch.nn.Module):
         proj = F.relu(proj)
         #proj = self.bn1(proj)
         proj = self.l2(proj)
-        #gelu_z = F.gelu(proj)
-        #return gelu_z - gelu_z.detach() + F.relu(proj).detach()
-        return proj
+        gelu_z = F.gelu(proj)
+        return gelu_z - gelu_z.detach() + F.relu(proj).detach()
+        #return proj
 
 class CrossSourceModelV2(torch.nn.Module):
     def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 256):
