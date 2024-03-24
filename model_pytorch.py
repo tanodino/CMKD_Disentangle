@@ -24,7 +24,7 @@ class ProjHead(torch.nn.Module):
         #return proj
 
 class CrossSourceModelV2(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 256):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 512):
         super(CrossSourceModelV2, self).__init__()
         self.first_enc = None
         self.second_enc = None
