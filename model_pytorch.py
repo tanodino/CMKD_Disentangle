@@ -30,11 +30,6 @@ class CrossSourceModelV2(torch.nn.Module):
         self.first_enc = None
         self.second_enc = None
 
-        self.projHFI = ProjHead(128)
-        self.projHFS = ProjHead(128)
-        self.projHSI = ProjHead(128)
-        self.projHSS = ProjHead(128)
-
         if f_encoder == 'image' or f_encoder == 'spectro' or f_encoder== 'thermal':
             first_enc = resnet18(weights=None)
             first_enc.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
@@ -55,6 +50,11 @@ class CrossSourceModelV2(torch.nn.Module):
 
         self.task_dom = nn.LazyLinear(2)
         self.task_cl = nn.LazyLinear(num_classes)
+        self.projHFI = ProjHead(128)
+        self.projHFS = ProjHead(128)
+        self.projHSI = ProjHead(128)
+        self.projHSS = ProjHead(128)
+
 
 
     def forward(self, x):
