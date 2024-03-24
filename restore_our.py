@@ -97,6 +97,7 @@ for i in range(10):
     pred_test, labels_test = evaluation(model, dataloader_test, device)
     f1_test = f1_score(labels_test, pred_test, average="weighted")
     acc_test = accuracy_score(labels_test, pred_test)
+    print("F1 %.2f and ACC %.2f"%(f1_test*100, acc_test*100))
     tot_f1.append(f1_test)
     tot_accuracy.append(acc_test)
 

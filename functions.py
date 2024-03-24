@@ -5,6 +5,7 @@ import torch
 import torchvision.transforms.functional as TF
 from collections import OrderedDict
 import torchvision.transforms as T 
+import numpy as np
 
 TRAIN_BATCH_SIZE = 128#512#128#16#512#1024#512
 VALID_BATCH_SIZE = 128
@@ -16,8 +17,6 @@ TH_FIXMATCH = .95
 WARM_UP_EPOCH_EMA = 50
 
 hashPREFIX2SOURCE = {'DEPTH':'image','RGB':'image','MS':'image','SAR':'image','SPECTRO':'image','MNIST':'mnist','FULL':'hyper','HALF':'hyper', "THERMAL":"thermal"}
-
-
 
 class MyRotateTransform():
     def __init__(self, angles: Sequence[int]):
@@ -101,7 +100,8 @@ class MyDataset(Dataset):
         y = self.targets[index]
         
         if self.transform:
-            x = self.transform(x)
+            if np.random.uniform() > .5:
+                x = self.transform(x)
         
         return x, y
     

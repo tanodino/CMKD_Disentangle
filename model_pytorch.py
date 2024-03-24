@@ -72,7 +72,6 @@ class MonoSourceModel(torch.nn.Module):
         elif encoder == 'hyper':
             self.first_enc = ModelEncoderHyper(hidden_dims=1024)
         elif encoder == 'mnist' :
-            #self.first_enc = ModelEncoderMNIST()
             self.first_enc = ModelEncoderLeNet()
 
         self.task_cl = nn.LazyLinear(num_classes)
