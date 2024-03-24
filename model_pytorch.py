@@ -11,20 +11,20 @@ class ProjHead(torch.nn.Module):
     def __init__(self, out_dim):
         super(ProjHead, self).__init__()
         self.l1 = nn.LazyLinear(out_dim)
-        self.bn1 = nn.BatchNorm1d(out_dim)
-        self.l2 = nn.LazyLinear(out_dim)
+        #self.bn1 = nn.BatchNorm1d(out_dim)
+        #self.l2 = nn.LazyLinear(out_dim)
 
     def forward(self,x):
         proj = self.l1(x)
-        proj = F.relu(proj)
-        proj = self.bn1(proj)
-        proj = self.l2(proj)
+        #proj = F.relu(proj)
+        #proj = self.bn1(proj)
+        #proj = self.l2(proj)
         #gelu_z = F.gelu(proj)
         return  F.relu(proj) #gelu_z - gelu_z.detach() + F.relu(proj).detach()
         #return proj
 
 class CrossSourceModelV2(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 512):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 128):
         super(CrossSourceModelV2, self).__init__()
         self.first_enc = None
         self.second_enc = None
