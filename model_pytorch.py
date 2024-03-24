@@ -13,7 +13,6 @@ class ProjHead(torch.nn.Module):
         self.l1 = nn.LazyLinear(out_dim, bias=False)
         self.bn1 = nn.BatchNorm1d(out_dim)
         self.l2 = nn.LazyLinear(out_dim, bias=False)
-        self.relu2 = nn.Relu()
 
     def forward(self,x):
         proj = self.l1(x)
