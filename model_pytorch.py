@@ -20,7 +20,7 @@ class ProjHead(torch.nn.Module):
         #proj = self.bn1(proj)
         proj = self.l2(proj)
         gelu_z = F.gelu(proj)
-        return gelu_z - gelu_z.detach() + F.relu(proj).detach()
+        return  F.relu(proj) #gelu_z - gelu_z.detach() + F.relu(proj).detach()
         #return proj
 
 class CrossSourceModelV2(torch.nn.Module):
