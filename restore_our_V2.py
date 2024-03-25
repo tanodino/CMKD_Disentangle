@@ -4,20 +4,20 @@ import numpy as np
 import sys
 from torch.utils.data import TensorDataset, DataLoader
 #from model_transformer import TransformerEncoder
-from model_pytorch import ModelHYPER, MonoSourceModel
+from model_pytorch import CrossSourceModelV2
 from sklearn.metrics import f1_score, accuracy_score
 from functions import hashPREFIX2SOURCE
 import os
 
 
-def evaluation(model, dataloader, device, dir_):
+def evaluation(model, dataloader, device):
     model.eval()
     tot_pred = []
     tot_labels = []
     for x_batch_f, y_batch in dataloader:
         x_batch_f = x_batch_f.to(device)
         y_batch = y_batch.to(device)
-        pred = model(x_batch_f)
+        pred = model.pred_firstEnc(x_batch_f)
         pred_npy = np.argmax(pred.cpu().detach().numpy(), axis=1)
         tot_pred.append( pred_npy )
         tot_labels.append( y_batch.cpu().detach().numpy())
@@ -45,28 +45,32 @@ def createDataLoader(first_data, y, tobeshuffled, BATCH_SIZE):
 
 dir_ = sys.argv[1]
 first_prefix = sys.argv[2]
-kd_loss_name = sys.argv[3]
-
-print(hashPREFIX2SOURCE[first_prefix])
+seocnd_prefix = sys.argv[3]
+method = sys.argv[4]
 
 folder_name = None
-folder_name = dir_+"/STUDENT_%s_%s"%(first_prefix, kd_loss_name)
+folder_name = dir_name = dir_+"/OUR-PROJH_%s_%s"%(first_prefix, method)
 
-second_data = None
-
+first_enc = hashPREFIX2SOURCE[first_prefix]
+second_enc = hashPREFIX2SOURCE[seocnd_prefix]
+'''
+second_enc = None
+if dir_ == "PAVIA_UNIVERSITY":
+    first_enc = 'hyper'
+    second_enc = 'hyper'
+elif dir_ == 'SUNRGBD' or dir_ == 'EUROSAT':
+    first_enc = 'image'
+    second_enc = 'image'
+'''
 first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
-print("first_data ", first_data.shape)
-
+second_data = np.load("%s/%s_data_normalized.npy"%(dir_,seocnd_prefix))
 labels = np.load("%s/labels.npy"%dir_)
 n_classes = len(np.unique(labels))
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-#if dir_ != "PAVIA_UNIVERSITY":
-#    model = MonoSourceModel(input_channel_first=first_data.shape[1], num_classes=n_classes)
-#else:
-#    model = ModelHYPER(num_classes=n_classes)
-model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[first_prefix], num_classes=n_classes)
+model = model = CrossSourceModelV2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=first_enc, s_encoder=second_enc)
+
 model = model.to(device)
 
 
@@ -74,7 +78,7 @@ tot_f1 = []
 tot_accuracy = []
 for i in range(10):
     model_weights_fileName = folder_name+"/%d.pth"%i
-    print("try to loading %s"%model_weights_fileName)
+    print("model_weights_fileName %s"%model_weights_fileName)
     if not os.path.exists(model_weights_fileName):
         continue
 
@@ -85,9 +89,12 @@ for i in range(10):
 
     model.load_state_dict(torch.load(model_weights_fileName))
 
+    print("test_f_data ",test_f_data.shape)
+    print("test_labels ",test_labels.shape)
+
     dataloader_test = createDataLoader(test_f_data, test_labels, False, 512)
 
-    pred_test, labels_test = evaluation(model, dataloader_test, device, dir_)
+    pred_test, labels_test = evaluation(model, dataloader_test, device)
     f1_test = f1_score(labels_test, pred_test, average="weighted")
     acc_test = accuracy_score(labels_test, pred_test)
     print("F1 %.2f and ACC %.2f"%(f1_test*100, acc_test*100))

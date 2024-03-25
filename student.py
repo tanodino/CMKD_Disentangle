@@ -200,7 +200,7 @@ model = None
 #if dir_ == "PAVIA_UNIVERSITY":
 #    model = ModelHYPER(num_classes=n_classes)
 #else:
-model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[first_prefix], num_classes=n_classes)
+model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[student_prefix], num_classes=n_classes)
 
 model = model.to(device)
 
