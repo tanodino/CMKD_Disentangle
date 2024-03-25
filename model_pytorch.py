@@ -47,8 +47,8 @@ class CrossSourceModelV2(torch.nn.Module):
         elif s_encoder == "mnist":
             self.second_enc = ModelEncoderLeNet()
 
-        #self.task_dom = nn.LazyLinear(2)
-        self.task_dom = nn.LazyLinear(2 * num_classes)
+        self.task_dom = nn.LazyLinear(2)
+        
         self.task_cl = nn.LazyLinear(num_classes)
 
         self.projHFI = ProjHead(proj_dim)

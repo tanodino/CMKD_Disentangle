@@ -165,7 +165,7 @@ model = model.to(device)
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
 #scl = SupervisedContrastiveLoss()
-scl = losses.SupConLoss(temperature=0.07)
+scl = losses.SupConLoss(temperature=.07)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
@@ -206,18 +206,19 @@ for epoch in range(EPOCHS):
         #emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec, s_emb_spec, f_emb_spec ]) )
         loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) )
 
+        tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
+        y_dom = torch.cat([ torch.zeros_like(pred_dom_f), torch.ones_like(pred_dom_s)] )
+        loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
+
+
         #scl
-        y_spec = torch.cat([y_batch_f+n_classes, y_batch_s+(2*n_classes)  ])
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_opt, y_batch_sar])
-        y_scl = torch.cat([y_batch_f, y_batch_s, y_spec ])
+        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
-
-        tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
-        #y_dom = torch.cat([ torch.zeros_like(pred_dom_f), torch.ones_like(pred_dom_s)] )
-        loss_pred_dom =loss_fn(tot_pred_dom, y_spec-n_classes)
 
         loss = loss_pred + loss_pred_dom
         if method == "CONTRA":
