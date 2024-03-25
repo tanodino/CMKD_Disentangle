@@ -164,8 +164,8 @@ model = model.to(device)
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-#scl = SupervisedContrastiveLoss()
-scl = losses.SupConLoss(temperature=.07)
+scl = SupervisedContrastiveLoss()
+#scl = losses.SupConLoss(temperature=.07)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
