@@ -217,7 +217,7 @@ for epoch in range(EPOCHS):
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         #y_dom = torch.cat([ torch.zeros_like(pred_dom_f), torch.ones_like(pred_dom_s)] )
-        loss_pred_dom =loss_fn(tot_pred_dom, y_spec)
+        loss_pred_dom =loss_fn(tot_pred_dom, y_spec-n_classes)
 
         loss = loss_pred + loss_pred_dom
         if method == "CONTRA":
