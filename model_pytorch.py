@@ -47,7 +47,8 @@ class CrossSourceModelV2(torch.nn.Module):
         elif s_encoder == "mnist":
             self.second_enc = ModelEncoderLeNet()
 
-        self.task_dom = nn.LazyLinear(2)
+        #self.task_dom = nn.LazyLinear(2)
+        self.task_dom = nn.LazyLinear(2 * num_classes)
         self.task_cl = nn.LazyLinear(num_classes)
 
         self.projHFI = ProjHead(proj_dim)
@@ -67,10 +68,10 @@ class CrossSourceModelV2(torch.nn.Module):
         s_emb_inv = s_emb[:,0:nfeat//2]
         s_emb_spec = s_emb[:,nfeat//2::]
         
-        return self.projHFI(f_emb_inv), self.projHFI(f_emb_spec), self.projHFI(s_emb_inv), self.projHFI(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        #return self.projHFI(f_emb_inv), self.projHFI(f_emb_spec), self.projHFI(s_emb_inv), self.projHFI(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
         #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHFI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
         #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
-        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
 
     def pred_firstEnc(self, x):        
         emb = self.first_enc(x).squeeze()
