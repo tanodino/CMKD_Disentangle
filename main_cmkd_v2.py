@@ -18,6 +18,7 @@ import time
 from sklearn.metrics import f1_score
 from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
 import os
+from pytorch_metric_learning import losses
 
 def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB'):
     #DATALOADER TRAIN
@@ -144,8 +145,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE*2, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE*2, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)
@@ -163,7 +164,9 @@ model = model.to(device)
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-scl = SupervisedContrastiveLoss()
+#scl = SupervisedContrastiveLoss()
+scl = losses.SupConLoss(temperature=.1)
+
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 # Loop through the data
@@ -213,6 +216,7 @@ for epoch in range(EPOCHS):
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_opt, y_batch_sar])
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 

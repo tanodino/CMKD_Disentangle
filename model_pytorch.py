@@ -10,21 +10,21 @@ import numpy as np
 class ProjHead(torch.nn.Module):
     def __init__(self, out_dim):
         super(ProjHead, self).__init__()
-        self.l1 = nn.LazyLinear(512)
-        self.bn1 = nn.BatchNorm1d(512)
+        self.l1 = nn.LazyLinear(out_dim)
+        self.bn1 = nn.BatchNorm1d(out_dim)
         self.l2 = nn.LazyLinear(out_dim)
 
     def forward(self,x):
         proj = self.l1(x)
-        proj = F.relu(proj)
-        proj = self.bn1(proj)
-        proj = self.l2(proj)
+        #proj = F.relu(proj)
+        #proj = self.bn1(proj)
+        #proj = self.l2(proj)
         #gelu_z = F.gelu(proj)
-        return  F.relu(proj) #gelu_z - gelu_z.detach() + F.relu(proj).detach()
+        return  proj#F.gelu(proj) - F.gelu(proj).detach() + F.relu(proj).detach()#F.relu(proj) #proj
         #return proj
 
 class CrossSourceModelV2(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 128):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 256):
         super(CrossSourceModelV2, self).__init__()
         self.first_enc = None
         self.second_enc = None
@@ -66,7 +66,10 @@ class CrossSourceModelV2(torch.nn.Module):
         f_emb_spec = f_emb[:,nfeat//2::]
         s_emb_inv = s_emb[:,0:nfeat//2]
         s_emb_spec = s_emb[:,nfeat//2::]
-        return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        
+        return self.projHFI(f_emb_inv), self.projHFI(f_emb_spec), self.projHFI(s_emb_inv), self.projHFI(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHFI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
         #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
 
     def pred_firstEnc(self, x):        
