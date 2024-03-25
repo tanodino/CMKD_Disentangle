@@ -164,7 +164,7 @@ model = model.to(device)
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-scl = SupervisedContrastiveLoss(temperature=5.)
+#scl = SupervisedContrastiveLoss(temperature=5.)
 #scl = losses.SupConLoss(temperature=.07)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
@@ -173,7 +173,13 @@ optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 global_valid = 0
 ema_weights = None
 valid_f1 = 0.0
+
+min_tau = 0.1
+max_tau = 1.0
+t_period = 20
 for epoch in range(EPOCHS):
+    temp = min_tau + 0.5 * (max_tau - min_tau) * (1 + torch.cos(torch.tensor(torch.pi * epoch / t_period )))
+    scl = SupervisedContrastiveLoss(temperature=temp)
     start = time.time()
     model.train()
     tot_loss = 0.0
