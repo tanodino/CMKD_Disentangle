@@ -1,4 +1,4 @@
-for i in $(seq 0 1 9)
+for i in $(seq 5 1 9)
 do
     for j in SPECTRO #MNIST
     do

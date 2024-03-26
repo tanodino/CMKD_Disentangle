@@ -228,14 +228,27 @@ for epoch in range(EPOCHS):
 
         loss_kd = None
         loss = None
-        if kd_loss_name == "KD": # ORIGINAL
+        if kd_loss_name == "KD": # ORIGINAL with alpha = 0.1
             loss_kd = kd_loss(pred, x_teacher_logit)
+            alpha = .1
             #weighting strategy taken by "Multi-level Logit Distillation" CVPR 2023
-            loss = .1 * loss_pred + .9*loss_kd
+            loss = alpha * loss_pred + (1-alpha)*loss_kd
+        
+        if kd_loss_name == "KD1": # ORIGINAL with alpha = 0
+            loss_kd = kd_loss(pred, x_teacher_logit)
+            alpha = 0.
+            loss = alpha * loss_pred + (1-alpha)*loss_kd
+        
+        if kd_loss_name == "KD2": # ORIGINAL with alpha = 0.5
+            loss_kd = kd_loss(pred, x_teacher_logit)
+            alpha = .5
+            loss = alpha * loss_pred + (1-alpha)*loss_kd
+        
         if kd_loss_name == "DKD": # 2022
             loss_kd = dkd_loss(pred, x_teacher_logit, y_batch)
             #weighting strategy taken by "Multi-level Logit Distillation" CVPR 2023
             loss = loss_pred + min(epoch / 20., 1.) * loss_kd
+        
         if kd_loss_name == "MLKD":# 2023
             loss_kd = mlkd_loss(pred, x_teacher_logit)
             #weighting strategy taken by "Multi-level Logit Distillation" CVPR 2023
