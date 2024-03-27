@@ -2,6 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+def normalizeLogit(logit):
+    mean = logit.mean(dim=-1, keepdims=True)
+    stdv = logit.std(dim=-1, keepdims=True)
+    return (logit - mean) / (1e-7 + stdv)
+
+
+
+
 ######### STANDARD KD #########
 ######### Temperature parameter value from "Multi-level Logit Distillation" CVPR 2023 #########
 def kd_loss(logits_student, logits_teacher, temperature=4):

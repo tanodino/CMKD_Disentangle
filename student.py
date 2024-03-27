@@ -1,4 +1,5 @@
-### To implemente the Transformer Framework I used the code from this website : https://www.kaggle.com/code/arunmohan003/transformer-from-scratch-using-pytorch
+### To Implement -> https://arxiv.org/abs/2403.01427
+
 
 import torch
 import torch.nn as nn
@@ -13,9 +14,10 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, hashPREFIX2SOURCE
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, hashPREFIX2SOURCE, CosineDecay
 import os
-from kd_losses import kd_loss, dkd_loss, mlkd_loss
+from kd_losses import kd_loss, dkd_loss, mlkd_loss, normalizeLogit
+from temp_global import Global_T
 import warnings 
 warnings.filterwarnings("ignore")
 
@@ -143,20 +145,27 @@ def dataAugRotate(data, labels, axis):
 #python student.py EUROSAT MS SAR SUM [MS|SAR] [KD|DKD|MLKD] 0
 #python student.py PAVIA_UNIVERSITY FULL FULL FULL HALF [KD|DKD|MLKD] 0
 
-dir_ = sys.argv[1]
+dir_ = sys.argv[1]  #SUNRGBD | TRISTAR | EUROSAT
 
-first_prefix = sys.argv[2]
-second_prefix = sys.argv[3]
-fusion_type = sys.argv[4]
+first_prefix = sys.argv[2] # RGB | DEPTH | MS
+second_prefix = sys.argv[3] # DEPTH | THERMAL | SAR
+fusion_type = sys.argv[4] # SUM
 
-student_prefix = sys.argv[5]
-kd_loss_name = sys.argv[6]
+student_prefix = sys.argv[5] # MS | SAR | RGB | DEPTH | THERMAL
+kd_loss_name = sys.argv[6] # KD1 | KD2 | DKD | MLKD | CTKD
+z_score_norm = sys.argv[7] # 0 | 1
 
-run_id = int(sys.argv[7])
+run_id = int(sys.argv[8])
 
 
 #CREATE FOLDER TO STORE RESULTS
-dir_name = dir_+"/STUDENT_%s_%s"%(student_prefix, kd_loss_name)
+dir_name = None
+if z_score_norm:
+    dir_name = dir_+"/STUDENT_%s_%s_ZNORM"%(student_prefix, kd_loss_name)
+else:
+    dir_name = dir_+"/STUDENT_%s_%s"%(student_prefix, kd_loss_name)
+
+
 if not os.path.exists(dir_name):
     os.mkdir(dir_name)
 
@@ -201,12 +210,27 @@ model = None
 #    model = ModelHYPER(num_classes=n_classes)
 #else:
 model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[student_prefix], num_classes=n_classes)
-
 model = model.to(device)
+
+
+module_list = nn.ModuleList([])
+module_list.append( model )
+
+global_mlp = None
+gradient_decay = None
+t_start = 1.0
+t_end = 20
+
+if kd_loss_name == 'CTKD':
+    gradient_decay = CosineDecay(max_value=0, min_value=-1., num_loops=5.0)
+    global_mlp = Global_T()
+    global_mlp = global_mlp.to(device)
+    module_list.append( global_mlp )
+
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(params=module_list.parameters(), lr=LEARNING_RATE)
 
 # Loop through the data
 global_valid = 0
@@ -226,14 +250,13 @@ for epoch in range(EPOCHS):
         pred = model(x_batch_f)   
         loss_pred = loss_fn(pred, y_batch)  
 
+        if z_score_norm:
+            pred = normalizeLogit(pred)
+            x_teacher_logit = normalizeLogit(x_teacher_logit)
+
         loss_kd = None
         loss = None
-        if kd_loss_name == "KD": # ORIGINAL with alpha = 0.1
-            loss_kd = kd_loss(pred, x_teacher_logit)
-            alpha = .1
-            #weighting strategy taken by "Multi-level Logit Distillation" CVPR 2023
-            loss = alpha * loss_pred + (1-alpha)*loss_kd
-        
+
         if kd_loss_name == "KD1": # ORIGINAL with alpha = 0
             loss_kd = kd_loss(pred, x_teacher_logit)
             alpha = 0.
@@ -253,7 +276,16 @@ for epoch in range(EPOCHS):
             loss_kd = mlkd_loss(pred, x_teacher_logit)
             #weighting strategy taken by "Multi-level Logit Distillation" CVPR 2023
             loss = loss_pred + loss_kd
-        
+        if kd_loss_name == 'CTKD':
+            decay_value = gradient_decay.get_value(epoch)
+            temp = global_mlp(decay_value)  # (teacher_output, student_output)
+            temp = t_start + t_end * torch.sigmoid(temp)
+            temp = temp.cuda()
+            temp = temp[0]
+            loss_kd = kd_loss(pred, x_teacher_logit, temperature=temp)
+            alpha = .1
+            loss = alpha*loss_pred + (1-alpha)*loss_kd
+
         loss.backward() # backward pass: backpropagate the prediction loss
         optimizer.step() # gradient descent: adjust the parameters by the gradients collected in the backward pass
         tot_loss+= loss.cpu().detach().numpy()

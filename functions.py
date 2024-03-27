@@ -6,6 +6,12 @@ import torchvision.transforms.functional as TF
 from collections import OrderedDict
 import torchvision.transforms as T 
 import numpy as np
+import math
+
+
+
+
+
 
 TRAIN_BATCH_SIZE = 128#512#128#16#512#1024#512
 VALID_BATCH_SIZE = 128
@@ -107,3 +113,22 @@ class MyDataset(Dataset):
     
     def __len__(self):
         return len(self.data)
+
+
+class CosineDecay(object):
+    def __init__(self,
+                max_value,
+                min_value,
+                num_loops):
+        self._max_value = max_value
+        self._min_value = min_value
+        self._num_loops = num_loops
+
+    def get_value(self, i):
+        if i < 0:
+            i = 0
+        if i >= self._num_loops:
+            i = self._num_loops
+        value = (math.cos(i * math.pi / self._num_loops) + 1.0) * 0.5
+        value = value * (self._max_value - self._min_value) + self._min_value
+        return value
