@@ -153,7 +153,7 @@ fusion_type = sys.argv[4] # SUM
 
 student_prefix = sys.argv[5] # MS | SAR | RGB | DEPTH | THERMAL
 kd_loss_name = sys.argv[6] # KD1 | KD2 | DKD | MLKD | CTKD
-z_score_norm = sys.argv[7] # 0 | 1
+z_score_norm = int(sys.argv[7]) # 0 | 1
 
 run_id = int(sys.argv[8])
 
@@ -164,6 +164,8 @@ if z_score_norm:
     dir_name = dir_+"/STUDENT_%s_%s_ZNORM"%(student_prefix, kd_loss_name)
 else:
     dir_name = dir_+"/STUDENT_%s_%s"%(student_prefix, kd_loss_name)
+
+print("dir_name %s"%dir_name)
 
 
 if not os.path.exists(dir_name):

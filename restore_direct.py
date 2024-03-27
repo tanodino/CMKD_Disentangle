@@ -67,7 +67,7 @@ model = model.to(device)
 
 tot_f1 = []
 tot_accuracy = []
-for i in range(10):
+for i in range(5):
     print("ITERATION %d"%i)
     model_weights_fileName = folder_name+"/%d.pth"%i
     if not os.path.exists(model_weights_fileName):
