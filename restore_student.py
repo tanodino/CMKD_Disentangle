@@ -46,11 +46,15 @@ def createDataLoader(first_data, y, tobeshuffled, BATCH_SIZE):
 dir_ = sys.argv[1]
 first_prefix = sys.argv[2]
 kd_loss_name = sys.argv[3]
+withNorm = int(sys.argv[4])
 
 print(hashPREFIX2SOURCE[first_prefix])
 
 folder_name = None
-folder_name = dir_+"/STUDENT_%s_%s"%(first_prefix, kd_loss_name)
+if withNorm:
+    folder_name = dir_+"/STUDENT_%s_%s_ZNORM"%(first_prefix, kd_loss_name)
+else:
+    folder_name = dir_+"/STUDENT_%s_%s"%(first_prefix, kd_loss_name)
 
 second_data = None
 

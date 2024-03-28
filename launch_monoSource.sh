@@ -1,4 +1,4 @@
-for i in $(seq 0 1 9)
+for i in $(seq 0 1 4)
 do
     python monoSource.py $1 $2 $i > log_${1}_${2}_${i}
 done

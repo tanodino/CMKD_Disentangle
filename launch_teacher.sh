@@ -1,4 +1,4 @@
-for i in $(seq 0 1 9)
+for i in $(seq 0 1 4)
 do
     #python teacher.py $1 $2 $3 $i CONCAT > log_${1}_${2}_${3}_${i}_CONCAT
     python teacher.py $1 $2 $3 $i SUM > log_${1}_${2}_${3}_${i}_SUM

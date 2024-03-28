@@ -13,12 +13,11 @@ import numpy as np
 import sys
 from sklearn.utils import shuffle
 #from model_transformer import TransformerEncoder
-from model_pytorch import CrossSourceModelV2, SupervisedContrastiveLoss
+from model_pytorch import CrossSourceModelGRL, SupervisedContrastiveLoss
 import time
 from sklearn.metrics import f1_score
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, CosineDecay
 import os
-from pytorch_metric_learning import losses
 
 def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB'):
     #DATALOADER TRAIN
@@ -84,7 +83,7 @@ method = sys.argv[5]
 #python main_cs.py PAVIA_UNIVERSITY HALF FULL 0 ORTHO
 
 #CREATE FOLDER TO STORE RESULTS
-dir_name = dir_+"/OUR-PROJH_%s_%s"%(first_prefix, method)
+dir_name = dir_+"/OUR-v3_%s_%s"%(first_prefix, method)
 if not os.path.exists(dir_name):
     os.mkdir(dir_name)
 
@@ -158,32 +157,34 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-model = CrossSourceModelV2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-#scl = SupervisedContrastiveLoss(temperature=5.)
-#scl = losses.SupConLoss(temperature=.07)
-
+scl = SupervisedContrastiveLoss()
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
+gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
 # Loop through the data
 global_valid = 0
 ema_weights = None
 valid_f1 = 0.0
-
-min_tau = 0.1
-max_tau = 1.0
-t_period = 20
 for epoch in range(EPOCHS):
-    temp = min_tau + 0.5 * (max_tau - min_tau) * (1 + torch.cos(torch.tensor(torch.pi * epoch / t_period )))
-    scl = SupervisedContrastiveLoss(temperature=temp)
     start = time.time()
     model.train()
     tot_loss = 0.0
     den = 0
+    #lambda_ = gradient_decay.get_value(epoch)
+    #min_tau = 0.01
+    #max_tau = 1.
+    #lambda_ = (2. / (1 + np.exp(-10.*epoch))) -1
+    #lambda_ = 1#(2. / (1 + np.exp(-epoch/10))) -1
+    #lambda_ = min_tau + 0.5 * (max_tau - min_tau) * (1 + np.cos(np.pi * epoch / 50 ))
+    #lambda_ = .5 * np.cos(np.pi + epoch / 10 ) + .5
+    lambda_ = 1.0
+    print("lambda %f"%lambda_)
     for x_batch_f, y_batch_f in dataloader_train_f:
         x_batch_s, y_batch_s = next(iter(dataloader_train_s))
 
@@ -193,6 +194,9 @@ for epoch in range(EPOCHS):
         y_batch_f = y_batch_f.to(device)
         y_batch_s = y_batch_s.to(device)
 
+        
+        #
+        
         f_emb_inv, \
         f_emb_spec, \
         s_emb_inv, \
@@ -200,8 +204,10 @@ for epoch in range(EPOCHS):
         pred_dom_f, \
         pred_dom_s, \
         pred_f, \
-        pred_s =  model([x_batch_f, x_batch_s])
-        
+        pred_s, \
+        discr_f, \
+        discr_s =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
+
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
@@ -213,7 +219,7 @@ for epoch in range(EPOCHS):
         loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) )
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
-        y_dom = torch.cat([ torch.zeros_like(pred_dom_f), torch.ones_like(pred_dom_s)] )
+        y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
 
@@ -222,11 +228,25 @@ for epoch in range(EPOCHS):
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_opt, y_batch_sar])
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
-        loss = loss_pred + loss_pred_dom
+        #DANN GRL
+        tot_pred_adv = torch.cat([discr_f, discr_s])
+        loss_adv_dann= loss_fn( tot_pred_adv, y_dom )
+
+
+        #L2 regularization
+        #l2_lambda = 0.01
+        #l2_reg = torch.tensor(0.).to(device)
+
+        #for param in model.parameters():
+        #    l2_reg += torch.norm(param)
+
+        #l2_reg = l2_reg.to(device)
+        #loss += l2_lambda * l2_reg
+
+        loss = loss_pred + loss_pred_dom + loss_adv_dann #+ l2_lambda * l2_reg
         if method == "CONTRA":
             loss = loss + loss_contra #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
@@ -244,34 +264,11 @@ for epoch in range(EPOCHS):
     pred_test, labels_test = evaluation(model, dataloader_test, device)
     f1_test = f1_score(labels_test, pred_test, average="weighted")
 
-    f1_test_ema = 0.0
-    f1_val_ema = 0.0
-    if epoch >= WARM_UP_EPOCH_EMA:
-        ema_weights = cumulate_EMA(model, ema_weights, MOMENTUM_EMA)
-        current_state_dict = model.state_dict()
-        model.load_state_dict(ema_weights)
-
-        pred_valid_ema, labels_valid_ema = evaluation(model, dataloader_valid, device)
-        f1_val_ema = f1_score(labels_valid_ema, pred_valid_ema, average="weighted")
-
-        pred_test_ema, labels_test_ema = evaluation(model, dataloader_test, device)
-        f1_test_ema = f1_score(labels_test_ema, pred_test_ema, average="weighted")
-
-        model.load_state_dict(current_state_dict)
     
-    print("current best %.2f EMA %.2f ORIG %.2f on the validation set"%(global_valid*100, f1_val_ema*100, f1_val*100))
-    if f1_val > global_valid or f1_val_ema > global_valid:
-        global_valid = max(f1_val, f1_val_ema)
-        if f1_val > f1_val_ema:
-            print("TRAIN LOSS at Epoch %d: %.4f with BEST ACC on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))    
-            torch.save(model.state_dict(), output_file)
-        else:
-            print("TRAIN LOSS at Epoch %d: %.4f with BEST ACC (from EMA) on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test_ema, (end-start)))    
-            current_state_dict = model.state_dict()
-            model.load_state_dict(ema_weights)
-            torch.save(model.state_dict(), output_file)
-            model.load_state_dict(current_state_dict)
-
+    if f1_val > global_valid :
+        global_valid = f1_val
+        print("TRAIN LOSS at Epoch %d: %.4f with BEST F1 on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))    
+        torch.save(model.state_dict(), output_file)
     else:
-        print("TRAIN LOSS at Epoch %d: %.4f with EMA ACC %.2f training time %d"%(epoch, tot_loss/den, 100*f1_test_ema, (end-start)))        
+        print("TRAIN LOSS at Epoch %d: %.4f with F1 %.2f training time %d"%(epoch, tot_loss/den, 100*f1_test, (end-start)))        
     sys.stdout.flush()

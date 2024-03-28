@@ -7,6 +7,36 @@ from torchvision.models import resnet18#, resnet50
 import numpy as np
 
 
+class FC_Classifier(torch.nn.Module):
+    def __init__(self, hidden_dims, n_classes, drop_probability=0.5):
+        super(FC_Classifier, self).__init__()
+
+        self.block = nn.Sequential(
+            #nn.LazyLinear(hidden_dims),
+            #nn.BatchNorm1d(hidden_dims),
+            #nn.ReLU(),
+            #nn.Dropout(p=drop_probability),
+            nn.LazyLinear(n_classes)
+        )
+    
+    def forward(self, X):
+        return self.block(X)
+
+class GradReverse(Function):
+    @staticmethod
+    def forward(ctx, x, alpha):
+        ctx.alpha = alpha
+        return x.view_as(x)
+        #print(alpha)
+    @staticmethod
+    def backward(ctx, grad_output):
+        output = grad_output * -ctx.alpha
+        return output, None
+
+def grad_reverse(x,alpha):
+    return GradReverse.apply(x,alpha)
+
+
 class ProjHead(torch.nn.Module):
     def __init__(self, out_dim):
         super(ProjHead, self).__init__()
@@ -23,9 +53,9 @@ class ProjHead(torch.nn.Module):
         return  proj#F.gelu(proj) - F.gelu(proj).detach() + F.relu(proj).detach()#F.relu(proj) #proj
         #return proj
 
-class CrossSourceModelV2(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image', proj_dim = 256):
-        super(CrossSourceModelV2, self).__init__()
+class CrossSourceModelGRL(torch.nn.Module):
+    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
+        super(CrossSourceModelGRL, self).__init__()
         self.first_enc = None
         self.second_enc = None
 
@@ -48,17 +78,10 @@ class CrossSourceModelV2(torch.nn.Module):
             self.second_enc = ModelEncoderLeNet()
 
         self.task_dom = nn.LazyLinear(2)
-        
         self.task_cl = nn.LazyLinear(num_classes)
+        self.discr = FC_Classifier(256, 2)
 
-        self.projHFI = ProjHead(proj_dim)
-        self.projHFS = ProjHead(proj_dim)
-        self.projHSI = ProjHead(proj_dim)
-        self.projHSS = ProjHead(proj_dim)
-
-
-
-    def forward(self, x):
+    def forward(self, x, lambda_val=1.):
         f_x, s_x = x
         f_emb = self.first_enc(f_x).squeeze()
         s_emb = self.second_enc(s_x).squeeze()
@@ -67,11 +90,7 @@ class CrossSourceModelV2(torch.nn.Module):
         f_emb_spec = f_emb[:,nfeat//2::]
         s_emb_inv = s_emb[:,0:nfeat//2]
         s_emb_spec = s_emb[:,nfeat//2::]
-        
-        #return self.projHFI(f_emb_inv), self.projHFI(f_emb_spec), self.projHFI(s_emb_inv), self.projHFI(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
-        #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHFI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
-        #return self.projHFI(f_emb_inv), self.projHFS(f_emb_spec), self.projHSI(s_emb_inv), self.projHSS(s_emb_spec), self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv)
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
 
     def pred_firstEnc(self, x):        
         emb = self.first_enc(x).squeeze()
@@ -84,6 +103,9 @@ class CrossSourceModelV2(torch.nn.Module):
         nfeat = emb.shape[1]
         emb_inv = emb[:,0:nfeat//2]
         return self.task_cl(emb_inv)
+
+
+
 
 
 class CrossSourceModel(torch.nn.Module):
@@ -333,6 +355,66 @@ class SupervisedContrastiveLoss(nn.Module):
         #dot_product = 1. - ( torch.acos(dot_product) / torch.pi )
 
         dot_product_tempered = dot_product / self.temperature
+        
+        # Minus max for numerical stability with exponential. Same done in cross entropy. Epsilon added to avoid log(0)
+        stab_max, _ = torch.max(dot_product_tempered, dim=1, keepdim=True)
+        exp_dot_tempered = (
+            torch.exp(dot_product_tempered - stab_max.detach() ) + 1e-5
+        )
+
+        mask_similar_class = (targets.unsqueeze(1).repeat(1, targets.shape[0]) == targets).to(device)
+        mask_anchor_out = (1 - torch.eye(exp_dot_tempered.shape[0])).to(device)
+        mask_combined = mask_similar_class * mask_anchor_out
+        cardinality_per_samples = torch.sum(mask_combined, dim=1)
+
+        log_prob = -torch.log(exp_dot_tempered / (torch.sum(exp_dot_tempered * mask_anchor_out, dim=1, keepdim=True)))
+        #### FILTER OUT POSSIBLE NaN PROBLEMS #### 
+        mdf = cardinality_per_samples!=0
+        cardinality_per_samples = cardinality_per_samples[mdf]
+        log_prob = log_prob[mdf]
+        mask_combined = mask_combined[mdf]
+        #### #### #### #### #### #### #### #### #### 
+
+        supervised_contrastive_loss_per_sample = torch.sum(log_prob * mask_combined, dim=1) / cardinality_per_samples
+        supervised_contrastive_loss = torch.mean(supervised_contrastive_loss_per_sample)
+        return supervised_contrastive_loss
+    
+
+class SupervisedContrastiveLossV2(nn.Module):
+    def __init__(self, temperature=0.07, min_tau=.07, max_tau=1., t_period=50, eps=1e-7):
+    #def __init__(self, temperature=1., min_tau=.07, max_tau=1., t_period=50, eps=1e-7):
+        """
+        Implementation of the loss described in the paper Supervised Contrastive Learning :
+        https://arxiv.org/abs/2004.11362
+
+        :param temperature: int
+        """
+        super(SupervisedContrastiveLossV2, self).__init__()
+        self.min_tau = min_tau
+        self.max_tau = max_tau
+        self.t_period = t_period
+        self.eps = eps
+
+    def forward(self, projections, targets, temperature=0.07):
+        """
+        :param projections: torch.Tensor, shape [batch_size, projection_dim]
+        :param targets: torch.Tensor, shape [batch_size]
+        :return: torch.Tensor, scalar
+        """
+        device = torch.device("cuda") if projections.is_cuda else torch.device("cpu")
+        #temperature = self.min_tau + 0.5 * (self.max_tau - self.min_tau) * (1 + torch.cos(torch.tensor(torch.pi * epoch / self.t_period )))
+        
+
+        dot_product = torch.mm(projections, projections.T)
+        ### For stability issues related to matrix multiplications
+        #dot_product = torch.clamp(dot_product, -1+self.eps, 1-self.eps)
+        ####GEODESIC SIMILARITY
+        #print(projections)
+        #print( dot_product )
+        #print( torch.acos(dot_product) / torch.pi )
+        #dot_product = 1. - ( torch.acos(dot_product) / torch.pi )
+
+        dot_product_tempered = dot_product / temperature
         
         # Minus max for numerical stability with exponential. Same done in cross entropy. Epsilon added to avoid log(0)
         stab_max, _ = torch.max(dot_product_tempered, dim=1, keepdim=True)

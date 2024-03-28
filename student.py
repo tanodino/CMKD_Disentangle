@@ -14,7 +14,7 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, hashPREFIX2SOURCE, CosineDecay
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, hashPREFIX2SOURCE, CosineDecay
 import os
 from kd_losses import kd_loss, dkd_loss, mlkd_loss, normalizeLogit
 from temp_global import Global_T
@@ -221,7 +221,7 @@ module_list.append( model )
 global_mlp = None
 gradient_decay = None
 t_start = 1.0
-t_end = 20
+t_range = 20
 
 if kd_loss_name == 'CTKD':
     gradient_decay = CosineDecay(max_value=0, min_value=-1., num_loops=5.0)
@@ -236,7 +236,6 @@ optimizer = torch.optim.Adam(params=module_list.parameters(), lr=LEARNING_RATE)
 
 # Loop through the data
 global_valid = 0
-ema_weights = None
 valid_f1 = 0.0
 for epoch in range(EPOCHS):
     start = time.time()
@@ -281,7 +280,7 @@ for epoch in range(EPOCHS):
         if kd_loss_name == 'CTKD':
             decay_value = gradient_decay.get_value(epoch)
             temp = global_mlp(decay_value)  # (teacher_output, student_output)
-            temp = t_start + t_end * torch.sigmoid(temp)
+            temp = t_start + t_range * torch.sigmoid(temp)
             temp = temp.cuda()
             temp = temp[0]
             loss_kd = kd_loss(pred, x_teacher_logit, temperature=temp)
@@ -299,33 +298,11 @@ for epoch in range(EPOCHS):
 
     pred_test, labels_test = evaluationStudent(model, dataloader_test, device)
     f1_test = f1_score(labels_test, pred_test, average="weighted")
-
-    f1_test_ema = 0.0
-    f1_val_ema = 0.0
-    if epoch >= WARM_UP_EPOCH_EMA:
-        ema_weights = cumulate_EMA(model, ema_weights, MOMENTUM_EMA)
-        current_state_dict = model.state_dict()
-        model.load_state_dict(ema_weights)
-
-        pred_valid_ema, labels_valid_ema = evaluationStudent(model, dataloader_valid, device)
-        f1_val_ema = f1_score(labels_valid_ema, pred_valid_ema, average="weighted")
-
-        pred_test_ema, labels_test_ema = evaluationStudent(model, dataloader_test, device)
-        f1_test_ema = f1_score(labels_test_ema, pred_test_ema, average="weighted")
-
-        model.load_state_dict(current_state_dict)
     
-    if f1_val > global_valid or f1_val_ema > global_valid:
-        global_valid = max(f1_val, f1_val_ema)
-        if f1_val > f1_val_ema:
-            print("TRAIN LOSS at Epoch %d: %.4f with BEST ACC on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))
-            torch.save(model.state_dict(), output_file)
-        else:
-            print("TRAIN LOSS at Epoch %d: %.4f with BEST ACC (from EMA) on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test_ema, (end-start)))    
-            current_state_dict = model.state_dict()
-            model.load_state_dict(ema_weights)
-            torch.save(model.state_dict(), output_file)
-            model.load_state_dict(current_state_dict)
+    if f1_val > global_valid :
+        global_valid = f1_val
+        print("TRAIN LOSS at Epoch %d: %.4f with BEST ACC on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))
+        torch.save(model.state_dict(), output_file)
     else:
-        print("TRAIN LOSS at Epoch %d: %.4f with EMA ACC %.2f training time %d"%(epoch, tot_loss/den, 100*f1_test_ema, (end-start)))        
+        print("TRAIN LOSS at Epoch %d: %.4f with F1 %.2f training time %d"%(epoch, tot_loss/den, 100*f1_test, (end-start)))        
     sys.stdout.flush()
