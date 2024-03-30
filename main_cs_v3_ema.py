@@ -235,7 +235,7 @@ for epoch in range(EPOCHS):
         tot_pred_adv = torch.cat([discr_f, discr_s])
         loss_adv_dann= loss_fn( tot_pred_adv, y_dom )
 
-        loss = loss_pred + loss_pred_dom + .5*loss_adv_dann #+ l2_lambda * l2_reg
+        loss = loss_pred + loss_pred_dom + loss_adv_dann #+ l2_lambda * l2_reg
         if method == "CONTRA":
             loss = loss + loss_contra #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
