@@ -83,7 +83,8 @@ method = sys.argv[5]
 #python main_cs.py PAVIA_UNIVERSITY HALF FULL 0 ORTHO
 
 #CREATE FOLDER TO STORE RESULTS
-dir_name = dir_+"/OUR_%s_%s"%(first_prefix, method)
+#dir_name = dir_+"/OUR_%s_%s"%(first_prefix, method)
+dir_name = dir_+"/OUR_GARBAGE_%s_%s"%(first_prefix, method)
 if not os.path.exists(dir_name):
     os.mkdir(dir_name)
 
