@@ -83,7 +83,7 @@ method = sys.argv[5]
 #python main_cs.py PAVIA_UNIVERSITY HALF FULL 0 ORTHO
 
 #CREATE FOLDER TO STORE RESULTS
-dir_name = dir_+"/OUR-v3_%s_%s"%(first_prefix, method)
+dir_name = dir_+"/OUR-v3-ema_%s_%s"%(first_prefix, method)
 if not os.path.exists(dir_name):
     os.mkdir(dir_name)
 
@@ -235,17 +235,6 @@ for epoch in range(EPOCHS):
         tot_pred_adv = torch.cat([discr_f, discr_s])
         loss_adv_dann= loss_fn( tot_pred_adv, y_dom )
 
-
-        #L2 regularization
-        #l2_lambda = 0.01
-        #l2_reg = torch.tensor(0.).to(device)
-
-        #for param in model.parameters():
-        #    l2_reg += torch.norm(param)
-
-        #l2_reg = l2_reg.to(device)
-        #loss += l2_lambda * l2_reg
-
         loss = loss_pred + loss_pred_dom + loss_adv_dann #+ l2_lambda * l2_reg
         if method == "CONTRA":
             loss = loss + loss_contra #loss_ortho #+ loss_contra#+ loss_contra #  #
@@ -261,14 +250,32 @@ for epoch in range(EPOCHS):
     pred_valid, labels_valid = evaluation(model, dataloader_valid, device)
     f1_val = f1_score(labels_valid, pred_valid, average="weighted")
 
-    pred_test, labels_test = evaluation(model, dataloader_test, device)
-    f1_test = f1_score(labels_test, pred_test, average="weighted")
+    f1_val_ema = 0
+    if epoch >= WARM_UP_EPOCH_EMA:
+        ema_weights = cumulate_EMA(model, ema_weights, MOMENTUM_EMA)
+        current_state_dict = model.state_dict()
+        model.load_state_dict(ema_weights)
+        pred_valid, labels_valid = evaluation(model, dataloader_valid, device)
+        f1_val_ema = f1_score(labels_valid, pred_valid, average="weighted")
+        model.load_state_dict(current_state_dict)
+
 
     
-    if f1_val > global_valid :
-        global_valid = f1_val
-        print("TRAIN LOSS at Epoch %d: %.4f with BEST F1 on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))    
-        torch.save(model.state_dict(), output_file)
+    if f1_val > global_valid or f1_val_ema > global_valid:
+        global_valid = max(f1_val,f1_val_ema)
+        if f1_val > f1_val_ema:
+            pred_test, labels_test = evaluation(model, dataloader_test, device)
+            f1_test = f1_score(labels_test, pred_test, average="weighted")
+            print("TRAIN LOSS at Epoch %d: %.4f with BEST F1 on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test,  (end-start)))    
+            torch.save(model.state_dict(), output_file)
+        else:
+            current_state_dict = model.state_dict()
+            model.load_state_dict(ema_weights)
+            pred_test_ema, labels_test_ema = evaluation(model, dataloader_test, device)
+            f1_test_ema = f1_score(labels_test_ema, pred_test_ema, average="weighted")
+            print("TRAIN LOSS at Epoch %d: %.4f with BEST (EMA) F1 on TEST SET %.2f with training time %d"%(epoch, tot_loss/den, 100*f1_test_ema,  (end-start)))    
+            torch.save(model.state_dict(), output_file)
+            model.load_state_dict(current_state_dict)
     else:
         print("TRAIN LOSS at Epoch %d: %.4f with F1 %.2f training time %d"%(epoch, tot_loss/den, 100*f1_test, (end-start)))        
     sys.stdout.flush()
