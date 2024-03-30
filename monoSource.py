@@ -20,7 +20,7 @@ def createDataLoader(x, y, tobeshuffled, BATCH_SIZE, type_data='none'):
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
     dataset = None
-    if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST':
+    if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST'  or type_data=='SAR':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
     else:
         dataset = TensorDataset(x_tensor, y_tensor)
