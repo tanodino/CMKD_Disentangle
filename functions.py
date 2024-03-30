@@ -37,8 +37,8 @@ angle = [0, 90, 180, 270]
 transform = T.Compose([
     T.RandomHorizontalFlip(),
     T.RandomVerticalFlip(),
-    T.RandomApply([MyRotateTransform(angles=angle)], p=0.5),
-    T.RandomApply([T.ColorJitter()], p=0.5)
+    T.RandomApply([MyRotateTransform(angles=angle)], p=0.5)#,
+    #T.RandomApply([T.ColorJitter()], p=0.5)
     ])
 
 
