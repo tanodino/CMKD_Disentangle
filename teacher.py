@@ -13,17 +13,21 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, hashPREFIX2SOURCE
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, hashPREFIX2SOURCE, MyDatasetMM, transform
 import os
 
 
-def createDataLoader(x_ms, x_sar, y, tobeshuffled, BATCH_SIZE):
+def createDataLoader(x_ms, x_sar, y, tobeshuffled, BATCH_SIZE, transform=None):
     #DATALOADER TRAIN
     x_ms_tensor = torch.tensor(x_ms, dtype=torch.float32)
     x_sar_tensor = torch.tensor(x_sar, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
 
-    dataset = TensorDataset(x_ms_tensor, x_sar_tensor, y_tensor)
+    dataest = None
+    if transform is None:
+        dataset = TensorDataset(x_ms_tensor, x_sar_tensor, y_tensor)
+    else:
+        dataset = MyDatasetMM(x_ms_tensor, x_sar_tensor, y_tensor, transform=transform)
     dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
     return dataloader
 
@@ -98,7 +102,7 @@ n_classes = len(np.unique(labels))
 train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
 
 #DATALOADER TRAIN
-dataloader_train = createDataLoader(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE)
+dataloader_train = createDataLoader(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE, transform=transform)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, TRAIN_BATCH_SIZE)
@@ -130,6 +134,9 @@ for epoch in range(EPOCHS):
         x_batch_f = x_batch_f.to(device)
         x_batch_s = x_batch_s.to(device)
         y_batch = y_batch.to(device)
+        print(x_batch_f.shape)
+        print(x_batch_s.shape)
+        exit()
 
         pred = model([x_batch_f, x_batch_s])        
         loss_pred = loss_fn(pred, y_batch)

@@ -93,6 +93,30 @@ class MyDataset_Unl(Dataset):
     def __len__(self):
         return len(self.data)
 
+#TO CHECK IF IT WORKS ...
+class MyDatasetMM(Dataset):
+    def __init__(self, data1, data2, targets, transform=None):
+        self.data1 = data1
+        self.data2 = data2
+        self.targets = torch.LongTensor(targets)
+        self.transform = transform
+        
+    def __getitem__(self, index):
+        x1 = self.data1[index]
+        x2 = self.data2[index]
+        dim1 = x1.shape[1]
+        #dim2 = x2.shape[2]
+        y = self.targets[index]
+        x = torch.cat([x1,x2],dim=1)
+
+        if self.transform:
+            if np.random.uniform() > .5:
+                x = self.transform(x)
+        
+        x1 = x[:,0:dim1,:,:]
+        x2 = x[:,dim1::,:,:]
+        return x1, x2, y
+
 
 
 class MyDataset(Dataset):
