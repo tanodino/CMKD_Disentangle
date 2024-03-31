@@ -14,7 +14,7 @@ import time
 from sklearn.metrics import f1_score
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, hashPREFIX2SOURCE, CosineDecay
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, hashPREFIX2SOURCE, CosineDecay, transform, MyDatasetMM
 import os
 from kd_losses import kd_loss, dkd_loss, mlkd_loss, normalizeLogit
 from temp_global import Global_T
@@ -25,38 +25,40 @@ warnings.filterwarnings("ignore")
 def getTeacherLogits(dir_, first_prefix, second_prefix, fusion_type, run_id):
     folder_name = dir_+"/TEACHER_%s"%fusion_type
     first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
-    train_idx = np.load("%s/train_idx_%d.npy"%(dir_,run_id))
+    #train_idx = np.load("%s/train_idx_%d.npy"%(dir_,run_id))
     second_data = None
-    train_s_data = None
+    #train_s_data = None
     if dir_ != "PAVIA_UNIVERSITY":
         second_data = np.load("%s/%s_data_normalized.npy"%(dir_,second_prefix))
-        train_s_data = second_data[train_idx]
+        #train_s_data = second_data[train_idx]
     
-    labels = np.load("%s/labels.npy"%dir_)
+    #labels = np.load("%s/labels.npy"%dir_)
 
-    train_f_data = first_data[train_idx]    
-    train_labels = labels[train_idx]
+    #train_f_data = first_data[train_idx]    
+    #train_labels = labels[train_idx]
     n_classes = len(np.unique(labels))
 
     #DATALOADER TRAIN
-    dataloader_train = None
+    #dataloader_train = None
     
     model = None
     if dir_ != "PAVIA_UNIVERSITY":
-        dataloader_train = createDataLoaderTrain(train_f_data, train_s_data, train_labels, False, TRAIN_BATCH_SIZE)
+        #dataloader_train = createDataLoaderTrain(train_f_data, train_s_data, train_labels, False, TRAIN_BATCH_SIZE)
         model = MultiSourceModel(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=hashPREFIX2SOURCE[first_prefix], s_encoder=hashPREFIX2SOURCE[second_prefix], fusion_type=fusion_type, num_classes=n_classes)
     else:
-        dataloader_train = createDataLoader(train_f_data, train_labels, False, TRAIN_BATCH_SIZE)
+        #dataloader_train = createDataLoader(train_f_data, train_labels, False, TRAIN_BATCH_SIZE)
         model = ModelHYPER(num_classes=n_classes)
     
     model = model.to(device)
     model.load_state_dict(torch.load(folder_name+"/%d.pth"%run_id))
-    
+
+    return model, first_data, second_data
+    '''
     if dir_ != "PAVIA_UNIVERSITY":
         return getLogits(model, dataloader_train, device)
     else:
         return getLogitsHYPER(model, dataloader_train, device)
-
+    '''
 
 def getLogitsHYPER(model, dataloader, device):
     model.eval()
@@ -80,12 +82,17 @@ def getLogits(model, dataloader, device):
         logits.append( pred.cpu().detach().numpy() )
     return np.concatenate(logits, axis=0)
 
-def createDataLoaderTrain(data, teacher_logits, labels, tobeshuffled, BATCH_SIZE):
-    x_tensor = torch.tensor(data, dtype=torch.float32)
-    x_teacher_logits = torch.tensor(teacher_logits, dtype=torch.float32)
-    y_tensor = torch.tensor(labels, dtype=torch.int64)
+def createDataLoaderTrain(x_ms, x_sar, y, tobeshuffled, BATCH_SIZE, transform=None):
+    #DATALOADER TRAIN
+    x_ms_tensor = torch.tensor(x_ms, dtype=torch.float32)
+    x_sar_tensor = torch.tensor(x_sar, dtype=torch.float32)
+    y_tensor = torch.tensor(y, dtype=torch.int64)
 
-    dataset = TensorDataset(x_tensor, x_teacher_logits, y_tensor)
+    dataest = None
+    if transform is None:
+        dataset = TensorDataset(x_ms_tensor, x_sar_tensor, y_tensor)
+    else:
+        dataset = MyDatasetMM(x_ms_tensor, x_sar_tensor, y_tensor, transform=transform)
     dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
     return dataloader
 
@@ -158,6 +165,13 @@ z_score_norm = int(sys.argv[7]) # 0 | 1
 run_id = int(sys.argv[8])
 
 
+which_source = None
+if first_prefix == student_prefix:
+    which_source = 0
+if second_prefix == student_prefix:
+    which_source = 1
+
+
 #CREATE FOLDER TO STORE RESULTS
 dir_name = None
 if z_score_norm:
@@ -176,9 +190,9 @@ output_file = dir_name+"/%s.pth"%(run_id)
 
 #RETRIEVING TEACHER LOGIT
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-teacher_logits = getTeacherLogits(dir_, first_prefix, second_prefix, fusion_type, run_id)
+teacher_model, first_data, second_data = getTeacherLogits(dir_, first_prefix, second_prefix, fusion_type, run_id)
 
-first_data = np.load("%s/%s_data_normalized.npy"%(dir_,student_prefix))
+#first_data = np.load("%s/%s_data_normalized.npy"%(dir_,student_prefix))
 labels = np.load("%s/labels.npy"%dir_)
 
 train_idx = np.load("%s/train_idx_%d.npy"%(dir_,run_id))
@@ -189,6 +203,10 @@ train_f_data = first_data[train_idx]
 valid_f_data = first_data[valid_idx]
 test_f_data = first_data[test_idx]
 
+train_s_data = second_data[train_idx]
+valid_s_data = second_data[valid_idx]
+test_s_data = second_data[test_idx]
+
 train_labels = labels[train_idx]
 valid_labels = labels[valid_idx]
 test_labels = labels[test_idx]
@@ -196,22 +214,29 @@ test_labels = labels[test_idx]
 
 n_classes = len(np.unique(labels))
 
-train_f_data, teacher_logits, train_labels = shuffle(train_f_data, teacher_logits, train_labels)
+#train_f_data, teacher_logits, train_labels = shuffle(train_f_data, teacher_logits, train_labels)
+train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
 
 #DATALOADER TRAIN
-dataloader_train = createDataLoaderTrain(train_f_data, teacher_logits, train_labels, True, TRAIN_BATCH_SIZE)
+dataloader_train = createDataLoaderTrain(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE)
 
-#DATALOADER VALID
-dataloader_valid = createDataLoader(valid_f_data, valid_labels, False, TRAIN_BATCH_SIZE)
-
-#DATALOADER TEST
-dataloader_test = createDataLoader(test_f_data, test_labels, False, TRAIN_BATCH_SIZE)
-
+dataloader_valid = None
+dataloader_test = None
 model = None
-#if dir_ == "PAVIA_UNIVERSITY":
-#    model = ModelHYPER(num_classes=n_classes)
-#else:
-model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[student_prefix], num_classes=n_classes)
+
+if which_source == 0:
+    #DATALOADER VALID
+    dataloader_valid = createDataLoader(valid_f_data, valid_labels, False, TRAIN_BATCH_SIZE)
+    #DATALOADER TEST
+    dataloader_test = createDataLoader(test_f_data, test_labels, False, TRAIN_BATCH_SIZE)
+    model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[student_prefix], num_classes=n_classes)
+else:
+    #DATALOADER VALID
+    dataloader_valid = createDataLoader(valid_s_data, valid_labels, False, TRAIN_BATCH_SIZE)
+    #DATALOADER TEST
+    dataloader_test = createDataLoader(test_s_data, test_labels, False, TRAIN_BATCH_SIZE)
+    model = MonoSourceModel(input_channel_first=second_data.shape[1], encoder=hashPREFIX2SOURCE[student_prefix], num_classes=n_classes)
+
 model = model.to(device)
 
 
@@ -242,13 +267,21 @@ for epoch in range(EPOCHS):
     model.train()
     tot_loss = 0.0
     den = 0
-    for x_batch_f, x_teacher_logit, y_batch in dataloader_train:
+    for x_batch_f, x_batch_s, y_batch in dataloader_train:
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
-        x_teacher_logit = x_teacher_logit.to(device)
+        x_batch_s = x_batch_s.to(device)
         y_batch = y_batch.to(device)
 
-        pred = model(x_batch_f)   
+        pred = None
+        if which_source == 0:
+            pred = model(x_batch_f)   
+        if which_source == 1:
+            pred = model(x_batch_s)
+        
+        x_teacher_logit = teacher_model([x_batch_f, x_batch_s])
+        x_teacher_logit = x_teacher_logit.detach()
+           
         loss_pred = loss_fn(pred, y_batch)  
 
         if z_score_norm:
