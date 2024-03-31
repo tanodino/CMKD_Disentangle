@@ -190,10 +190,11 @@ output_file = dir_name+"/%s.pth"%(run_id)
 
 #RETRIEVING TEACHER LOGIT
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+labels = np.load("%s/labels.npy"%dir_)
 teacher_model, first_data, second_data = getTeacherModel(dir_, first_prefix, second_prefix, labels, fusion_type, run_id)
 
 #first_data = np.load("%s/%s_data_normalized.npy"%(dir_,student_prefix))
-labels = np.load("%s/labels.npy"%dir_)
+
 
 train_idx = np.load("%s/train_idx_%d.npy"%(dir_,run_id))
 valid_idx = np.load("%s/valid_idx_%d.npy"%(dir_,run_id)) 
