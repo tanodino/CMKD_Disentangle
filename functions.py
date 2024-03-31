@@ -107,7 +107,7 @@ class MyDatasetMM(Dataset):
         dim1 = x1.shape[1]
         #dim2 = x2.shape[2]
         y = self.targets[index]
-        #print(x1.shape)
+        print("dim1 %d"%dim1)
         #print(x2.shape)
         x = torch.cat([x1,x2],dim=0)
 
@@ -117,6 +117,10 @@ class MyDatasetMM(Dataset):
         
         x1 = x[0:dim1,:,:]
         x2 = x[dim1::,:,:]
+        print(x1.shape)
+        print(x2.shape)
+        print("===========")
+        exit()
         return x1, x2, y
 
     def __len__(self):
