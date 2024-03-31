@@ -107,6 +107,8 @@ class MyDatasetMM(Dataset):
         dim1 = x1.shape[1]
         #dim2 = x2.shape[2]
         y = self.targets[index]
+        print(x1.shape)
+        print(x2.shape)
         x = torch.cat([x1,x2],dim=1)
 
         if self.transform:
