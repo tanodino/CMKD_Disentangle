@@ -104,19 +104,16 @@ class MyDatasetMM(Dataset):
     def __getitem__(self, index):
         x1 = self.data1[index]
         x2 = self.data2[index]
-        dim1 = x1.shape[1]
-        #dim2 = x2.shape[2]
+        dim1 = x1.shape[0]
         y = self.targets[index]
-        print("dim1 %d"%dim1)
-        #print(x2.shape)
         x = torch.cat([x1,x2],dim=0)
 
         if self.transform:
             if np.random.uniform() > .5:
                 x = self.transform(x)
         
-        x1 = x[0:3,:,:]
-        x2 = x[3::,:,:]
+        x1 = x[0:dim1,:,:]
+        x2 = x[dim1::,:,:]
         print(x1.shape)
         print(x2.shape)
         print("===========")
