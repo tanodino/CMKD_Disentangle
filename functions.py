@@ -115,8 +115,6 @@ class MyDatasetMM(Dataset):
             if np.random.uniform() > .5:
                 x = self.transform(x)
         
-        print(x.shape)
-        exit()
         x1 = x[0:dim1,:,:]
         x2 = x[dim1::,:,:]
         return x1, x2, y
