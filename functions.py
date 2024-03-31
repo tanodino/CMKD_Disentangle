@@ -117,6 +117,10 @@ class MyDatasetMM(Dataset):
         x2 = x[:,dim1::,:,:]
         return x1, x2, y
 
+    def __len__(self):
+        return len(self.data1)
+
+
 
 
 class MyDataset(Dataset):
