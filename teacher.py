@@ -134,10 +134,6 @@ for epoch in range(EPOCHS):
         x_batch_f = x_batch_f.to(device)
         x_batch_s = x_batch_s.to(device)
         y_batch = y_batch.to(device)
-        print(x_batch_f.shape)
-        print(x_batch_s.shape)
-        exit()
-
         pred = model([x_batch_f, x_batch_s])        
         loss_pred = loss_fn(pred, y_batch)
 
