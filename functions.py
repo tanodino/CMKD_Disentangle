@@ -115,8 +115,8 @@ class MyDatasetMM(Dataset):
             if np.random.uniform() > .5:
                 x = self.transform(x)
         
-        x1 = x[0:dim1,:,:]
-        x2 = x[dim1::,:,:]
+        x1 = x[0:3,:,:]
+        x2 = x[3::,:,:]
         print(x1.shape)
         print(x2.shape)
         print("===========")
