@@ -114,10 +114,6 @@ class MyDatasetMM(Dataset):
         
         x1 = x[0:dim1,:,:]
         x2 = x[dim1::,:,:]
-        print(x1.shape)
-        print(x2.shape)
-        print("===========")
-        exit()
         return x1, x2, y
 
     def __len__(self):
