@@ -24,7 +24,7 @@ def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
     dataest = None
-    #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST','FULL','HALF', "THERMAL"}
+    #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST',"THERMAL"}
     if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST' or type_data=='SAR' or type_data=='DEPTH' or type_data=='THERMAL':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
     else:

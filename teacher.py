@@ -102,7 +102,10 @@ n_classes = len(np.unique(labels))
 train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
 
 #DATALOADER TRAIN
-dataloader_train = createDataLoader(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE, transform=transform)
+if first_prefix == 'SPECTRO' or second_prefix == 'SPECTRO':
+    dataloader_train = createDataLoader(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE)
+else:
+    dataloader_train = createDataLoader(train_f_data, train_s_data, train_labels, True, TRAIN_BATCH_SIZE, transform=transform)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, TRAIN_BATCH_SIZE)
