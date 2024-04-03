@@ -1,10 +1,13 @@
-for i in $(seq 5 1 9)
+for i in $(seq 0 1 4)
 do
-    for j in SPECTRO #MNIST
+    for j in MNIST SPECTRO
     do
-        for k in KD DKD MLKD
+        for k in KD1 KD2 DKD MLKD CTKD
         do
-            python student.py AV-MNIST MNIST SPECTRO SUM $j $k $i
+            for v in 0 1
+            do
+                python student.py AV-MNIST MNIST SPECTRO SUM $j $k $v $i
+            done
         done
     done
 done
