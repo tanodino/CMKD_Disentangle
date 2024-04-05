@@ -103,8 +103,8 @@ class CrossSourceModelGRLv2(torch.nn.Module):
         #f_emb = self.first_enc(f_x).squeeze()
         #s_emb = self.second_enc(s_x).squeeze()
         #nfeat = f_emb.shape[1]
-        f_emb_inv = self.first_enc_inv(f_x).squueze()
-        f_emb_spec = self.first_enc_spec(f_x).squueze()
+        f_emb_inv = self.first_enc_inv(f_x).squeeze()
+        f_emb_spec = self.first_enc_spec(f_x).squeeze()
         s_emb_inv = self.second_enc_inv(s_x).squeeze()
         s_emb_spec = self.second_enc_spec(s_x).squeeze()
         return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
