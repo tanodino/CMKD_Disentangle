@@ -54,7 +54,7 @@ def evaluation(model, dataloader, device):
         x_batch_s = x_batch_s.to(device)
         y_batch = y_batch.to(device)
         pred_f = model.pred_firstEnc(x_batch_f)
-        pred_s = model.pred_secondEnc(x_batch_f)
+        pred_s = model.pred_secondEnc(x_batch_s)
         #_,_,_,_,_,_,pred,_ = model([x_batch_f, x_batch_s])
         pred_npy = np.argmax(pred_f.cpu().detach().numpy(), axis=1)
         tot_pred_f.append( pred_npy )
