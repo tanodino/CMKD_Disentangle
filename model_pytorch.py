@@ -107,7 +107,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         f_emb_spec = self.first_enc_spec(f_x).squeeze()
         s_emb_inv = self.second_enc_inv(s_x).squeeze()
         s_emb_spec = self.second_enc_spec(s_x).squeeze()
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(torch.cat([f_emb_inv,f_emb_spec],dim=1) ), self.task_cl(torch.cat([s_emb_inv,s_emb_spec],dim=1)), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(torch.cat([f_emb_inv,f_emb_spec.detach()],dim=1) ), self.task_cl(torch.cat([s_emb_inv,s_emb_spec.detach()],dim=1)), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
 
     def pred_firstEnc(self, x):        
         emb_inv = self.first_enc_inv(x).squeeze()
