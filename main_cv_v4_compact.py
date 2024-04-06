@@ -255,7 +255,7 @@ for epoch in range(EPOCHS):
 
         loss = loss_pred + loss_pred_dom + loss_adv_dann #+ l2_lambda * l2_reg
         if method == "CONTRA":
-            loss = loss + loss_contra + loss_ortho #loss_ortho #+ loss_contra#+ loss_contra #  #
+            loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho
         
