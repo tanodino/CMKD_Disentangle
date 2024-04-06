@@ -49,7 +49,7 @@ seocnd_prefix = sys.argv[3]
 method = sys.argv[4]
 
 folder_name = None
-folder_name = dir_name = dir_+"/OUR-v3_%s_%s"%(first_prefix, method)
+folder_name = dir_name = dir_+"/OUR-v4_%s_%s"%(first_prefix, method)
 
 first_enc = hashPREFIX2SOURCE[first_prefix]
 second_enc = hashPREFIX2SOURCE[seocnd_prefix]
