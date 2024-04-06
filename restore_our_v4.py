@@ -4,7 +4,7 @@ import numpy as np
 import sys
 from torch.utils.data import TensorDataset, DataLoader
 #from model_transformer import TransformerEncoder
-from model_pytorch import CrossSourceModelGRL
+from model_pytorch import CrossSourceModelGRLv2
 from sklearn.metrics import f1_score, accuracy_score
 from functions import hashPREFIX2SOURCE
 import os
@@ -69,7 +69,7 @@ n_classes = len(np.unique(labels))
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-model = model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=first_enc, s_encoder=second_enc)
+model = model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1], f_encoder=first_enc, s_encoder=second_enc)
 
 model = model.to(device)
 
