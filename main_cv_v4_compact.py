@@ -277,12 +277,12 @@ for epoch in range(EPOCHS):
     if f1_val_f > global_valid_f:
         global_valid_f = f1_val_f
         torch.save(model.state_dict(), output_file_f)
-        final_string = final_string+" BEST on %s F1 on TEST SET %f"%(first_prefix, 100*f1_test_f)
+        final_string = final_string+" BEST on %s F1 on TEST SET %.2f"%(first_prefix, 100*f1_test_f)
     
     if f1_val_s > global_valid_s:
         global_valid_s = f1_val_s
         torch.save(model.state_dict(), output_file_s)
-        final_string = final_string+" BEST on %s F1 on TEST SET %f"%(second_prefix, 100*f1_test_s)
+        final_string = final_string+" BEST on %s F1 on TEST SET %.2f"%(second_prefix, 100*f1_test_s)
     
     final_string = final_string+" with training time %d"%((end-start))
     print(final_string)
