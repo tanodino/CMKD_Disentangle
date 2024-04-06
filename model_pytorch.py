@@ -95,7 +95,8 @@ class CrossSourceModelGRLv3(torch.nn.Module):
             self.second_enc_inv = ModelEncoderLeNet()
             self.second_enc_spec = ModelEncoderLeNet()
 
-        self.task_dom = nn.LazyLinear(2)
+        #self.task_dom = nn.LazyLinear(2)
+        self.task_dom = FC_Classifier(256, 2)
         self.task_cl = nn.LazyLinear(num_classes)
         #self.discr = FC_Classifier(256, 2)
 
