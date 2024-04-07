@@ -13,7 +13,7 @@ import numpy as np
 import sys
 from sklearn.utils import shuffle
 #from model_transformer import TransformerEncoder
-from model_pytorch import CrossSourceModelGRLv2, SupervisedContrastiveLoss
+from model_pytorch import CrossSourceModelGRLv3, SupervisedContrastiveLoss
 import time
 from sklearn.metrics import f1_score
 from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, CosineDecay
@@ -173,7 +173,7 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRLv3(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
