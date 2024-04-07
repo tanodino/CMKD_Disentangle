@@ -18,6 +18,8 @@ import time
 from sklearn.metrics import f1_score
 from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, CosineDecay
 import os
+import warnings
+warnings.filterwarnings('ignore')
 
 def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB'):
     #DATALOADER TRAIN
