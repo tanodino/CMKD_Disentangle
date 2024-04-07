@@ -25,7 +25,7 @@ def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB
     #DATALOADER TRAIN
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.int64)
-    dataest = None
+    dataset = None
     #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST',"THERMAL"}
     if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST' or type_data=='SAR' or type_data=='DEPTH' or type_data=='THERMAL':
         dataset = MyDataset(x_tensor, y_tensor, transform=transform)
@@ -162,8 +162,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE*4, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE*4, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)
@@ -190,7 +190,6 @@ gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
 global_valid_f = 0
 global_valid_s = 0
 ema_weights = None
-valid_f1 = 0.0
 for epoch in range(EPOCHS):
     start = time.time()
     model.train()
