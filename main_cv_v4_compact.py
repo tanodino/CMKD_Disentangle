@@ -305,9 +305,13 @@ for epoch in range(EPOCHS):
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
         y_scl = torch.cat([y_batch_f, y_batch_s])
-        loss_contra = scl( emb_scl , y_scl )
+        loss_contra1 = scl( emb_scl , y_scl )
 
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
+        y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
+        loss_contra2 = scl(emb_scl,y_scl)
 
+        loss_contra = loss_contra1 + loss_contra2
         #DANN GRL
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
@@ -316,6 +320,7 @@ for epoch in range(EPOCHS):
         
         loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra + loss_ortho
 
+        
         '''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
