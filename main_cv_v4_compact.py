@@ -301,8 +301,10 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
-        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        y_scl = torch.cat([y_batch_f, y_batch_s])
         loss_contra = scl( emb_scl , y_scl )
 
 
@@ -312,14 +314,14 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_pred_dom + loss_adv_dann
+        loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra + loss_ortho
 
-        ''''''
+        '''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho
-        
+        '''
 
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
