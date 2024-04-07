@@ -178,19 +178,19 @@ n_classes = len(np.unique(labels))
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
 
-#dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-#dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 
 #train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
-train_f_data, train_labels = shuffle(train_f_data, train_labels)
-train_s_data, train_labels = shuffle(train_s_data, train_labels)
+#train_f_data, train_labels = shuffle(train_f_data, train_labels)
+#train_s_data, train_labels = shuffle(train_s_data, train_labels)
 
-dataset_train_f = createDataSet(train_f_data, train_labels, transform, type_data=first_prefix)
-dataset_train_s = createDataSet(train_s_data, train_labels, transform, type_data=second_prefix)
+#dataset_train_f = createDataSet(train_f_data, train_labels, transform, type_data=first_prefix)
+#dataset_train_s = createDataSet(train_s_data, train_labels, transform, type_data=second_prefix)
 
-dataset = torch.utils.data.TensorDataset(dataset_train_f, dataset_train_s)
-train_dataloader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+#dataset = torch.utils.data.TensorDataset(dataset_train_f, dataset_train_s)
+#train_dataloader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 512)
@@ -223,7 +223,7 @@ for epoch in range(EPOCHS):
     den = 0
     lambda_ = 1.0
     print("lambda %f"%lambda_)
-    for xy_f, xy_s in train_dataloader:
+    for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
         x_batch_f, y_batch_f = xy_f
         x_batch_s, y_batch_s = xy_s
         #for x_batch_f, y_batch_f in dataloader_train_f:
