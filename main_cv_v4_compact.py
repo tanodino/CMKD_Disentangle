@@ -234,7 +234,7 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
@@ -249,8 +249,8 @@ global_valid_f = 0
 global_valid_s = 0
 ema_weights = None
 ridg_init = torch.ones(n_classes, device='cuda')
-#ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
-ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
+ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
+#ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
 ridg_momentum = 0.1
 
 for epoch in range(EPOCHS):
