@@ -219,7 +219,7 @@ for epoch in range(EPOCHS):
 
         paired_classes_mask = np.array(y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
         
-        if len(paired_classes_mask)!=0:
+        if paired_classes_mask:
             paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
 
         tot_pred = torch.cat([pred_f, pred_s])   
@@ -247,7 +247,7 @@ for epoch in range(EPOCHS):
 
 
         #DANN GRL
-        if len(paired_classes_mask)!=0:
+        if paired_classes_mask:
             tot_pred_adv = torch.cat([discr_f, discr_s])
             loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask ).to(device)
             loss_adv_dann = loss_adv_dann.mean()
