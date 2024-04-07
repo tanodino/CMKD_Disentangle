@@ -233,7 +233,7 @@ for epoch in range(EPOCHS):
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
     dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
     dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    for xy_f, xy_s in zip(dataloader_train_s, dataloader_train_f):
+    for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
         x_batch_f, y_batch_f = xy_f
         x_batch_s, y_batch_s = xy_s
     #for x_batch_s, y_batch_s in dataloader_train_s:
