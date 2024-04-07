@@ -339,7 +339,7 @@ for epoch in range(EPOCHS):
             else:
                 ridg_rational_bank[classes[i]] = (1 - ridg_momentum) * ridg_rational_bank[classes[i]] + ridg_momentum * rational_mean
             #loss_rational += ((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach())**2).sum(dim=2).mean()
-                loss_rational += torch.abs((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach()) ).sum(dim=2).mean()
+            loss_rational += torch.abs((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach()) ).sum(dim=2).mean()
         #loss = F.cross_entropy(logits, all_y)
 
         loss = loss + 1. * loss_rational
