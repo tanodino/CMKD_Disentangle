@@ -313,12 +313,12 @@ for epoch in range(EPOCHS):
         
         loss = loss_pred #+ loss_pred_dom  + loss_adv_dann
 
-        '''
+        ''''''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho
-        '''
+        
 
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
