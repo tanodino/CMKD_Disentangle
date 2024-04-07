@@ -249,7 +249,8 @@ global_valid_f = 0
 global_valid_s = 0
 ema_weights = None
 ridg_init = torch.ones(n_classes, device='cuda')
-ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
+#ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
+ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
 ridg_momentum = 0.1
 
 for epoch in range(EPOCHS):
