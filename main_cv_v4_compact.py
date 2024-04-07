@@ -230,6 +230,10 @@ for epoch in range(EPOCHS):
     den = 0
     lambda_ = 1.0
     print("lambda %f"%lambda_)
+    train_f_data, train_label_f = shuffle(train_f_data, train_label_f)
+    train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
+    dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+    dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
     for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
         x_batch_f, y_batch_f = xy_f
         x_batch_s, y_batch_s = xy_s
