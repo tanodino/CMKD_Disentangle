@@ -225,11 +225,11 @@ for epoch in range(EPOCHS):
     den = 0
     lambda_ = 1.0
     print("lambda %f"%lambda_)
-    for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
-        x_batch_f, y_batch_f = xy_f
-        x_batch_s, y_batch_s = xy_s
-        #for x_batch_f, y_batch_f in dataloader_train_f:
-        #x_batch_s, y_batch_s = next(iter(dataloader_train_s))
+    #for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
+        #x_batch_f, y_batch_f = xy_f
+        #x_batch_s, y_batch_s = xy_s
+    for x_batch_s, y_batch_s in dataloader_train_s:
+        x_batch_f, y_batch_f = next(iter(dataloader_train_f))
 
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
