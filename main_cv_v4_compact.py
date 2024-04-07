@@ -16,10 +16,34 @@ from sklearn.utils import shuffle
 from model_pytorch import CrossSourceModelGRLv2, SupervisedContrastiveLoss
 import time
 from sklearn.metrics import f1_score
-from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, CosineDecay
+from functions import TRAIN_BATCH_SIZE, LEARNING_RATE, EPOCHS, WARM_UP_EPOCH_EMA, cumulate_EMA, MOMENTUM_EMA, transform, MyDataset, hashPREFIX2SOURCE, CosineDecay, MyDataset4
 import os
 import warnings
 warnings.filterwarnings('ignore')
+
+
+def createDataLoader4(x1, x2, y1, y2, tobeshuffled, transform, BATCH_SIZE, type_data1='RGB', type_data2='RGB'):
+    x1_tensor = torch.tensor(x1, dtype=torch.float32)
+    y1_tensor = torch.tensor(y1, dtype=torch.int64)
+    x2_tensor = torch.tensor(x2, dtype=torch.float32)
+    y2_tensor = torch.tensor(y2, dtype=torch.int64)
+
+    dataset = None
+    transform1 = None
+    transform2 = None
+
+    #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST',"THERMAL"}
+    if type_data1 == 'RGB' or type_data1=='MS' or type_data1=='MNIST' or type_data1=='SAR' or type_data1=='DEPTH' or type_data1=='THERMAL':
+        transform1 = transform
+    
+    if type_data2 == 'RGB' or type_data2=='MS' or type_data2=='MNIST' or type_data2=='SAR' or type_data2=='DEPTH' or type_data2=='THERMAL':
+        transform2 = transform
+    
+    dataset = MyDataset4(x1_tensor, y1_tensor, x2_tensor, y2_tensor, transform1=transform1, transform2=transform2)    
+    dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
+    return dataloader
+
+
 
 def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB'):
     #DATALOADER TRAIN
@@ -185,9 +209,10 @@ train_s_data, train_label_s = shuffle(train_s_data, train_labels)
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
 
-dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+#dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+#dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
+dataloader_train = createDataLoader4(train_f_data, train_s_data, train_label_f, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data1=first_prefix, type_data2=second_prefix)
 
 #train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
 #train_f_data, train_labels = shuffle(train_f_data, train_labels)
@@ -235,11 +260,13 @@ for epoch in range(EPOCHS):
     lambda_ = 1.0
     train_f_data, train_label_f = shuffle(train_f_data, train_label_f)
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
-    dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-    dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
-        x_batch_f, y_batch_f = xy_f
-        x_batch_s, y_batch_s = xy_s
+    #dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+    #dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+    dataloader_train = createDataLoader4(train_f_data, train_s_data, train_label_f, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data1=first_prefix, type_data2=second_prefix)
+    for x_batch_f, x_batch_s, y_batch_f, y_batch_s in dataloader_train:    
+    #for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
+    #    x_batch_f, y_batch_f = xy_f
+    #    x_batch_s, y_batch_s = xy_s
     #for x_batch_s, y_batch_s in dataloader_train_s:
     #    x_batch_f, y_batch_f = next(iter(dataloader_train_f))
 

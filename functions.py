@@ -120,6 +120,35 @@ class MyDatasetMM(Dataset):
         return len(self.data1)
 
 
+class MyDataset4(Dataset):
+    def __init__(self, data1, targets1, data2, targets2, transform1=None, transform2=None):
+        self.data1 = data1
+        self.data2 = data2
+        self.targets1 = torch.LongTensor(targets1)
+        self.targets2 = torch.LongTensor(targets2)
+        self.transform1 = transform1
+        self.transform2 = transform2
+        
+    def __getitem__(self, index):
+        x1 = self.data1[index]
+        x2 = self.data2[index]
+        y1 = self.targets1[index]
+        y2 = self.targets2[index]
+        
+        if self.transform1:
+            if np.random.uniform() > .5:
+                x1 = self.transform(x1)
+
+        if self.transform2:
+            if np.random.uniform() > .5:
+                x2 = self.transform(x2)
+
+
+        return x1, x2, y1, y2
+    
+    def __len__(self):
+        return len(self.data)
+
 
 
 class MyDataset(Dataset):
