@@ -217,7 +217,7 @@ for epoch in range(EPOCHS):
         discr_s =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
 
 
-        paired_classes_mask = (y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
+        paired_classes_mask = np.array(y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
         paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
 
         tot_pred = torch.cat([pred_f, pred_s])   
