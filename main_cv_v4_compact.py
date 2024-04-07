@@ -311,7 +311,7 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred #+ loss_pred_dom  + loss_adv_dann
+        loss = loss_pred + loss_pred_dom #+ loss_adv_dann
 
         ''''''
         if method == "CONTRA":
