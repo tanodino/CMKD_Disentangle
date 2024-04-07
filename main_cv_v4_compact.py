@@ -58,11 +58,11 @@ def evaluation(model, dataloader, device):
         pred_f = model.pred_firstEnc(x_batch_f)
         pred_s = model.pred_secondEnc(x_batch_s)
         #_,_,_,_,_,_,pred,_ = model([x_batch_f, x_batch_s])
-        pred_npy = np.argmax(pred_f.cpu().detach().numpy(), axis=1)
-        tot_pred_f.append( pred_npy )
+        pred_npy_f = np.argmax(pred_f.cpu().detach().numpy(), axis=1)
+        tot_pred_f.append( pred_npy_f )
 
-        pred_npy = np.argmax(pred_s.cpu().detach().numpy(), axis=1)
-        tot_pred_s.append( pred_npy )
+        pred_npy_s = np.argmax(pred_s.cpu().detach().numpy(), axis=1)
+        tot_pred_s.append( pred_npy_s )
 
         tot_labels.append( y_batch.cpu().detach().numpy())
     tot_pred_f = np.concatenate(tot_pred_f)
