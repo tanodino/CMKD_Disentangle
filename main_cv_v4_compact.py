@@ -229,12 +229,11 @@ for epoch in range(EPOCHS):
     tot_loss = 0.0
     den = 0
     lambda_ = 1.0
-    print("lambda %f"%lambda_)
     train_f_data, train_label_f = shuffle(train_f_data, train_label_f)
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
     dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
     dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
+    for xy_f, xy_s in zip(dataloader_train_s, dataloader_train_f):
         x_batch_f, y_batch_f = xy_f
         x_batch_s, y_batch_s = xy_s
     #for x_batch_s, y_batch_s in dataloader_train_s:
@@ -287,6 +286,15 @@ for epoch in range(EPOCHS):
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho
+
+
+        #### LOSS RATIONALE DOMAIN GENERALIZATION #############
+        emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
+        rational = torch.zeros(n_classes, x_batch_f.shape[0]+x_batch_s.shape[0], f_emb_inv.shape[1], device=device)
+        for i in range(n_classes):
+            rational[i] = model.task_cl.weight[i] * emb_inv
+        
+        ############################################################ 
         
         loss.backward() # backward pass: backpropagate the prediction loss
         optimizer.step() # gradient descent: adjust the parameters by the gradients collected in the backward pass
