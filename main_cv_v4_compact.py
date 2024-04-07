@@ -237,8 +237,8 @@ for epoch in range(EPOCHS):
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_opt, y_batch_sar])
-        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        y_scl = torch.cat([y_batch_f, y_batch_s, y_batch_f+n_classes, y_batch_s+(2*n_classes)  ])
+        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        #y_scl = torch.cat([y_batch_f, y_batch_s, y_batch_f+n_classes, y_batch_s+(2*n_classes)  ])
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
