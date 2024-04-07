@@ -318,7 +318,7 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_pred_dom  + loss_contra + loss_ortho #+ loss_adv_dann
+        loss = loss_pred + loss_pred_dom + loss_contra + loss_ortho #+ loss_adv_dann
 
         
         '''
@@ -349,7 +349,7 @@ for epoch in range(EPOCHS):
             #loss_rational += torch.abs((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach()) ).sum(dim=2).mean()
         #loss = F.cross_entropy(logits, all_y)
 
-        loss = loss + 1. * loss_rational
+        #loss = loss + 1. * loss_rational
         
         ############################################################ 
         
