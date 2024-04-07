@@ -223,6 +223,10 @@ gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
 global_valid_f = 0
 global_valid_s = 0
 ema_weights = None
+ridg_init = torch.ones(n_classes, device='cuda')
+ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
+ridg_momentum = 0.1
+
 for epoch in range(EPOCHS):
     start = time.time()
     model.train()
@@ -233,11 +237,11 @@ for epoch in range(EPOCHS):
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
     dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
     dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
-        x_batch_f, y_batch_f = xy_f
-        x_batch_s, y_batch_s = xy_s
-    #for x_batch_s, y_batch_s in dataloader_train_s:
-        #x_batch_f, y_batch_f = next(iter(dataloader_train_f))
+    #for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
+    #    x_batch_f, y_batch_f = xy_f
+    #    x_batch_s, y_batch_s = xy_s
+    for x_batch_s, y_batch_s in dataloader_train_s:
+        x_batch_f, y_batch_f = next(iter(dataloader_train_f))
 
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
@@ -290,9 +294,25 @@ for epoch in range(EPOCHS):
 
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
+        all_y = torch.cat([y_batch_f,y_batch_s],dim=0)
         rational = torch.zeros(n_classes, x_batch_f.shape[0]+x_batch_s.shape[0], f_emb_inv.shape[1], device=device)
         for i in range(n_classes):
             rational[i] = model.task_cl.weight[i] * emb_inv
+        
+        classes = torch.unique(all_y)
+        loss_rational = 0
+        for i in range(classes.shape[0]):
+            rational_mean = rational[:, all_y==classes[i]].mean(dim=1)
+            if ridg_init[classes[i]]:
+                ridg_rational_bank[classes[i]] = rational_mean
+                ridg_init[classes[i]] = False
+            else:
+                ridg_rational_bank[classes[i]] = (1 - ridg_momentum) * ridg_rational_bank[classes[i]] + \
+                                ridg_momentum * rational_mean
+            loss_rational += ((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach())**2).sum(dim=2).mean()
+        #loss = F.cross_entropy(logits, all_y)
+        
+        #loss += .1 * loss_rational
         
         ############################################################ 
         

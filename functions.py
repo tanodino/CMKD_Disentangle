@@ -133,8 +133,8 @@ class MyDataset(Dataset):
         y = self.targets[index]
         
         if self.transform:
-            if np.random.uniform() > .5:
-                x = self.transform(x)
+            #if np.random.uniform() > .5:
+            x = self.transform(x)
         
         return x, y
     
