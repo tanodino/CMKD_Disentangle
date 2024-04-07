@@ -311,7 +311,7 @@ for epoch in range(EPOCHS):
             loss_rational += ((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach())**2).sum(dim=2).mean()
         #loss = F.cross_entropy(logits, all_y)
         
-        loss += .1 * loss_rational
+        loss += 1. * loss_rational
         
         ############################################################ 
         
