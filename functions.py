@@ -147,7 +147,7 @@ class MyDataset4(Dataset):
         return x1, x2, y1, y2
     
     def __len__(self):
-        return len(self.data)
+        return len(self.data1)
 
 
 
