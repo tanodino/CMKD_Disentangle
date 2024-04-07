@@ -237,11 +237,11 @@ for epoch in range(EPOCHS):
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
     dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
     dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    #for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
-    #    x_batch_f, y_batch_f = xy_f
-    #    x_batch_s, y_batch_s = xy_s
-    for x_batch_s, y_batch_s in dataloader_train_s:
-        x_batch_f, y_batch_f = next(iter(dataloader_train_f))
+    for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
+        x_batch_f, y_batch_f = xy_f
+        x_batch_s, y_batch_s = xy_s
+    #for x_batch_s, y_batch_s in dataloader_train_s:
+    #    x_batch_f, y_batch_f = next(iter(dataloader_train_f))
 
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
@@ -307,12 +307,11 @@ for epoch in range(EPOCHS):
                 ridg_rational_bank[classes[i]] = rational_mean
                 ridg_init[classes[i]] = False
             else:
-                ridg_rational_bank[classes[i]] = (1 - ridg_momentum) * ridg_rational_bank[classes[i]] + \
-                                ridg_momentum * rational_mean
+                ridg_rational_bank[classes[i]] = (1 - ridg_momentum) * ridg_rational_bank[classes[i]] + ridg_momentum * rational_mean
             loss_rational += ((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach())**2).sum(dim=2).mean()
         #loss = F.cross_entropy(logits, all_y)
         
-        #loss += .1 * loss_rational
+        loss += .1 * loss_rational
         
         ############################################################ 
         
