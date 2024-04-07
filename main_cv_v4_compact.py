@@ -218,6 +218,8 @@ for epoch in range(EPOCHS):
 
 
         paired_classes_mask = np.array(y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
+        print(paired_classes_mask.shape)
+        
         paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
 
         tot_pred = torch.cat([pred_f, pred_s])   
