@@ -311,7 +311,7 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_pred_dom  + loss_adv_dann
+        loss = loss_pred #+ loss_pred_dom  + loss_adv_dann
 
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
@@ -320,6 +320,7 @@ for epoch in range(EPOCHS):
 
 
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
+        #### ICCV 2023 - Domain Generalization via Rationale Invariance
         emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
         all_y = torch.cat([y_batch_f,y_batch_s],dim=0)
         rational = torch.zeros(n_classes, x_batch_f.shape[0]+x_batch_s.shape[0], f_emb_inv.shape[1], device=device)
@@ -338,7 +339,7 @@ for epoch in range(EPOCHS):
             loss_rational += ((rational[:, all_y==classes[i]] - (ridg_rational_bank[classes[i]].unsqueeze(1)).detach())**2).sum(dim=2).mean()
         #loss = F.cross_entropy(logits, all_y)
         
-        #loss += 1. * loss_rational
+        loss += 1. * loss_rational
         
         ############################################################ 
         
