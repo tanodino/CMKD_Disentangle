@@ -311,14 +311,14 @@ for epoch in range(EPOCHS):
         y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
         loss_contra2 = scl(emb_scl,y_scl)
 
-        loss_contra = loss_contra1 + loss_contra2
+        loss_contra = (loss_contra1 + loss_contra2)/2
         #DANN GRL
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_pred_dom + loss_contra + loss_ortho #+ loss_adv_dann
+        loss = loss_pred #+ loss_pred_dom + loss_contra + loss_ortho #+ loss_adv_dann
 
         
         '''
