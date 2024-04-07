@@ -229,7 +229,7 @@ for epoch in range(EPOCHS):
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
-
+        '''
         #scl
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
@@ -237,6 +237,21 @@ for epoch in range(EPOCHS):
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
+        '''
+
+        emb_scl_1 = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        y_scl_1 = torch.cat([y_batch_f, y_batch_s])
+        loss_contra_1 = scl( emb_scl_1 , y_scl_1 )
+
+        emb_scl_2 = nn.functional.normalize( torch.cat([f_emb_inv, f_emb_spec]) )
+        y_scl_2 = torch.cat([y_batch_f, torch.ones_like(y_batch_f)*n_classes])
+        loss_contra_2 = scl( emb_scl_2 , y_scl_2 )
+
+        emb_scl_3 = nn.functional.normalize( torch.cat([s_emb_inv, s_emb_spec]) )
+        y_scl_3 = torch.cat([y_batch_s, torch.ones_like(y_batch_s)*n_classes])
+        loss_contra_3 = scl( emb_scl_3 , y_scl_3 )
+
+        loss_contra = (loss_contra_1 + loss_contra_2 + loss_contra_3 )/ 3.
 
         #DANN GRL
         tot_pred_adv = torch.cat([discr_f, discr_s])
