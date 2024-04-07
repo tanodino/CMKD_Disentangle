@@ -245,7 +245,7 @@ for epoch in range(EPOCHS):
 
         #DANN GRL
         tot_pred_adv = torch.cat([discr_f, discr_s])
-        loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask )
+        loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask ).to(device)
         loss_adv_dann = loss_adv_dann.mean()
 
 
