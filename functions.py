@@ -137,11 +137,11 @@ class MyDataset4(Dataset):
         
         if self.transform1:
             if np.random.uniform() > .5:
-                x1 = self.transform(x1)
+                x1 = self.transform1(x1)
 
         if self.transform2:
             if np.random.uniform() > .5:
-                x2 = self.transform(x2)
+                x2 = self.transform2(x2)
 
 
         return x1, x2, y1, y2
