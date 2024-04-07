@@ -218,9 +218,9 @@ for epoch in range(EPOCHS):
 
 
         paired_classes_mask = np.array(y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
-        print(paired_classes_mask.shape)
         
-        paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
+        if len(paired_classes_mask)!=0:
+            paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
 
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
@@ -236,7 +236,7 @@ for epoch in range(EPOCHS):
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
-
+        loss = loss_pred + loss_pred_dom 
         #scl
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
@@ -247,10 +247,11 @@ for epoch in range(EPOCHS):
 
 
         #DANN GRL
-        tot_pred_adv = torch.cat([discr_f, discr_s])
-        loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask ).to(device)
-        loss_adv_dann = loss_adv_dann.mean()
-
+        if len(paired_classes_mask)!=0:
+            tot_pred_adv = torch.cat([discr_f, discr_s])
+            loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask ).to(device)
+            loss_adv_dann = loss_adv_dann.mean()
+            loss = loss + loss_adv_dann
 
         #L2 regularization
         #l2_lambda = 0.01
@@ -262,7 +263,7 @@ for epoch in range(EPOCHS):
         #l2_reg = l2_reg.to(device)
         #loss += l2_lambda * l2_reg
 
-        loss = loss_pred + loss_pred_dom + loss_adv_dann #+ l2_lambda * l2_reg
+         #+ l2_lambda * l2_reg
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
