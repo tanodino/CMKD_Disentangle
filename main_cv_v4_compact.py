@@ -173,8 +173,9 @@ test_labels = labels[test_idx]
 
 n_classes = len(np.unique(labels))
 
-train_f_data, train_labels = shuffle(train_f_data, train_labels)
-train_s_data, train_labels = shuffle(train_s_data, train_labels)
+train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
+#train_f_data, train_labels = shuffle(train_f_data, train_labels)
+#train_s_data, train_labels = shuffle(train_s_data, train_labels)
 
 
 #DATALOADER TRAIN
