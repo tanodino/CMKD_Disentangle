@@ -218,12 +218,6 @@ for epoch in range(EPOCHS):
         discr_f, \
         discr_s =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
 
-
-        paired_classes_mask = np.array(y_batch_f.cpu().detach().numpy() == y_batch_s.cpu().detach().numpy()).astype("int")
-        
-        if paired_classes_mask.any():
-            paired_classes_mask = np.concatenate([paired_classes_mask,paired_classes_mask],axis=0)
-
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
@@ -243,17 +237,17 @@ for epoch in range(EPOCHS):
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         #y_scl = torch.cat([y_batch_opt, y_batch_sar])
-        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        y_scl = torch.cat([y_batch_f, y_batch_s, y_batch_f+n_classes, y_batch_s+(2*n_classes)  ])
         #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
 
         #DANN GRL
-        if paired_classes_mask.any():
-            tot_pred_adv = torch.cat([discr_f, discr_s])
-            loss_adv_dann = loss_fn_2( tot_pred_adv, y_dom ) * torch.tensor( paired_classes_mask ).to(device)
-            loss_adv_dann = loss_adv_dann.mean()
-            loss = loss + loss_adv_dann
+        
+        tot_pred_adv = torch.cat([discr_f, discr_s])
+        loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
+        loss = loss + loss_adv_dann
 
         #L2 regularization
         #l2_lambda = 0.01
