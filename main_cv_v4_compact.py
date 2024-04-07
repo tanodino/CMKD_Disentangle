@@ -166,10 +166,10 @@ dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transfo
 dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 #DATALOADER VALID
-dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 256)
+dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 512)
 
 #DATALOADER TEST
-dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False, 256)
+dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False, 512)
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -181,7 +181,6 @@ model = model.to(device)
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
-loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
 scl = SupervisedContrastiveLoss()
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
@@ -222,23 +221,16 @@ for epoch in range(EPOCHS):
 
         emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
-        
-        #emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_inv, s_emb_inv]) )
-        #emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec, s_emb_spec, f_emb_spec ]) )
         loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) )
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
-        loss = loss_pred + loss_pred_dom 
+
         #scl
         emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
-        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        #y_scl = torch.cat([y_batch_opt, y_batch_sar])
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        #y_scl = torch.cat([y_batch_f, y_batch_s, y_batch_f+n_classes, y_batch_s+(2*n_classes)  ])
-        #y_scl = torch.cat([y_batch_opt, y_batch_sar + n_classes, torch.ones_like(y_batch_opt)*(2*n_classes), torch.ones_like(y_batch_sar)*(2*n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
 
@@ -246,19 +238,10 @@ for epoch in range(EPOCHS):
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
-        loss = loss + loss_adv_dann
+        
+        
+        loss = loss_pred + loss_pred_dom  + loss_adv_dann
 
-        #L2 regularization
-        #l2_lambda = 0.01
-        #l2_reg = torch.tensor(0.).to(device)
-
-        #for param in model.parameters():
-        #    l2_reg += torch.norm(param)
-
-        #l2_reg = l2_reg.to(device)
-        #loss += l2_lambda * l2_reg
-
-         #+ l2_lambda * l2_reg
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
