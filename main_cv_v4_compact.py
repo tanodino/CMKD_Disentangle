@@ -173,7 +173,11 @@ test_labels = labels[test_idx]
 
 n_classes = len(np.unique(labels))
 
-train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
+train_f_data, train_label_f = shuffle(train_f_data, train_labels)
+train_s_data, train_label_s = shuffle(train_s_data, train_labels)
+#train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
+
+
 #train_f_data, train_labels = shuffle(train_f_data, train_labels)
 #train_s_data, train_labels = shuffle(train_s_data, train_labels)
 
@@ -181,8 +185,8 @@ train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, t
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
 
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 
 #train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
@@ -226,11 +230,11 @@ for epoch in range(EPOCHS):
     den = 0
     lambda_ = 1.0
     print("lambda %f"%lambda_)
-    #for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
-        #x_batch_f, y_batch_f = xy_f
-        #x_batch_s, y_batch_s = xy_s
-    for x_batch_s, y_batch_s in dataloader_train_s:
-        x_batch_f, y_batch_f = next(iter(dataloader_train_f))
+    for xy_f, xy_s in zip(dataloader_train_f, dataloader_train_s):
+        x_batch_f, y_batch_f = xy_f
+        x_batch_s, y_batch_s = xy_s
+    #for x_batch_s, y_batch_s in dataloader_train_s:
+        #x_batch_f, y_batch_f = next(iter(dataloader_train_f))
 
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
