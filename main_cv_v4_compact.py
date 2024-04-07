@@ -34,6 +34,21 @@ def createDataLoader2(x, y, tobeshuffled, transform , BATCH_SIZE, type_data='RGB
     dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
     return dataloader
 
+def createDataSet(x, y, transform , type_data='RGB'):
+    #DATALOADER TRAIN
+    x_tensor = torch.tensor(x, dtype=torch.float32)
+    y_tensor = torch.tensor(y, dtype=torch.int64)
+    dataset = None
+    #'DEPTH','RGB','MS','SAR','SPECTRO','MNIST',"THERMAL"}
+    if type_data == 'RGB' or type_data=='MS' or type_data=='MNIST' or type_data=='SAR' or type_data=='DEPTH' or type_data=='THERMAL':
+        dataset = MyDataset(x_tensor, y_tensor, transform=transform)
+    else:
+        dataset = TensorDataset(x_tensor, y_tensor)
+    #dataloader = DataLoader(dataset, shuffle=tobeshuffled, batch_size=BATCH_SIZE)
+    #return dataloader
+    return dataset
+
+
 
 
 def createDataLoader(x_ms, x_sar, y, tobeshuffled, BATCH_SIZE):
@@ -158,12 +173,24 @@ test_labels = labels[test_idx]
 
 n_classes = len(np.unique(labels))
 
-train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
+
 
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
-dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+
+#dataloader_train_f = createDataLoader2(train_f_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+#dataloader_train_s = createDataLoader2(train_s_data, train_labels, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+
+
+#train_f_data, train_s_data, train_labels = shuffle(train_f_data, train_s_data, train_labels)
+train_f_data, train_labels = shuffle(train_f_data, train_labels)
+train_s_data, train_labels = shuffle(train_s_data, train_labels)
+
+dataset_train_f = createDataSet(train_f_data, train_labels, transform, type_data=first_prefix)
+dataset_train_s = createDataSet(train_s_data, train_labels, transform, type_data=second_prefix)
+
+dataset = torch.utils.data.TensorDataset(dataset_train_f, dataset_train_s)
+train_dataloader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
 #DATALOADER VALID
 dataloader_valid = createDataLoader(valid_f_data, valid_s_data, valid_labels, False, 512)
@@ -196,8 +223,11 @@ for epoch in range(EPOCHS):
     den = 0
     lambda_ = 1.0
     print("lambda %f"%lambda_)
-    for x_batch_f, y_batch_f in dataloader_train_f:
-        x_batch_s, y_batch_s = next(iter(dataloader_train_s))
+    for xy_f, xy_s in train_dataloader:
+        x_batch_f, y_batch_f = xy_f
+        x_batch_s, y_batch_s = xy_s
+        #for x_batch_f, y_batch_f in dataloader_train_f:
+        #x_batch_s, y_batch_s = next(iter(dataloader_train_s))
 
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
