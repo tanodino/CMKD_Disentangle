@@ -253,7 +253,7 @@ ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
 #ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
 ridg_momentum = 0.1
 
-iteration_dataloader_train_s = iter(dataloader_train_s)
+
 for epoch in range(EPOCHS):
     start = time.time()
     model.train()
@@ -273,6 +273,9 @@ for epoch in range(EPOCHS):
     #    x_batch_s, y_batch_s = xy_s
     #for x_batch_s, y_batch_s in dataloader_train_s:
     #    x_batch_f, y_batch_f = next(iter(dataloader_train_f))
+    train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
+    dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+    iteration_dataloader_train_s = iter(dataloader_train_s)
     for x_batch_f, y_batch_f in dataloader_train_f:
         x_batch_s, y_batch_s = next(iteration_dataloader_train_s)
         optimizer.zero_grad()
@@ -305,24 +308,25 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        y_scl = torch.cat([y_batch_f, y_batch_s])
-        loss_contra1 = scl( emb_scl , y_scl )
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
+        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        loss_contra = scl( emb_scl , y_scl )
+        #y_scl = torch.cat([y_batch_f, y_batch_s])
+        #loss_contra1 = scl( emb_scl , y_scl )
 
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
-        y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
-        loss_contra2 = scl(emb_scl,y_scl)
+        #emb_scl = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
+        #y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
+        #loss_contra2 = scl(emb_scl,y_scl)
 
-        loss_contra = (loss_contra1 + loss_contra2)/2
+        #loss_contra = (loss_contra1 + loss_contra2)/2
         #DANN GRL
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred #+ loss_pred_dom + loss_contra + loss_ortho #+ loss_adv_dann
+        loss = loss_pred + loss_pred_dom + loss_contra + loss_ortho #+ loss_adv_dann
 
         
         '''
