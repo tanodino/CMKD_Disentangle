@@ -340,7 +340,7 @@ for epoch in range(EPOCHS):
         emb_scl_cl = nn.functional.normalize(tot_pred)
         loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
         
-        loss = loss_pred  + loss_pred_dom + loss_adv_dann # + loss_contra_cl #+ loss_adv_dann#+ loss_contra_sel
+        loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_contra_sel# + loss_contra_cl #+ loss_adv_dann#
 
         
         
