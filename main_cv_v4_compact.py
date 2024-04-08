@@ -309,7 +309,7 @@ for epoch in range(EPOCHS):
         rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
         #rescaling = np.expand_dims(rescaling,-1)
         #loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
-        loss_pred = nn.functional.cross_entropy( tot_pred, torch.cat([y_batch_f, y_batch_s]), weight=rescaling)
+        loss_pred = nn.functional.cross_entropy( tot_pred, torch.cat([y_batch_f, y_batch_s]), weight=torch.tensor(rescaling).to(device))
 
 
         emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
