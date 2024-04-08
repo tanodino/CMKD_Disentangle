@@ -302,12 +302,15 @@ for epoch in range(EPOCHS):
         discr_s =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
 
         tot_pred = torch.cat([pred_f, pred_s])   
-        loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        #loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
-        loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        
+        #loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
         rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
-        rescaling = np.expand_dims(rescaling,-1)
-        loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
+        #rescaling = np.expand_dims(rescaling,-1)
+        #loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
+        nn.functional.cross_entropy(tot_pred, torch.cat([y_batch_f, y_batch_s], weight=rescaling)
+
 
         emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
