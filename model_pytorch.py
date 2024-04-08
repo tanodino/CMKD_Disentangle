@@ -96,6 +96,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
 
         self.task_dom = nn.LazyLinear(2)
         self.task_cl = nn.LazyLinear(num_classes)
+        self.task_cl2 = nn.LazyLinear(num_classes)
         self.discr = FC_Classifier(256, 2)
 
     def forward(self, x, lambda_val=1.):
@@ -105,7 +106,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         s_emb_inv = self.second_enc_inv(s_x).squeeze()
         s_emb_spec = self.second_enc_spec(s_x).squeeze()
         nfeat = f_emb_inv.shape[1]//2
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv), self.discr(grad_reverse(f_emb_inv[:,0:nfeat],lambda_val)), self.discr(grad_reverse(s_emb_inv[:,0:nfeat],lambda_val))
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl2(s_emb_inv), self.discr(grad_reverse(f_emb_inv[:,0:nfeat],lambda_val)), self.discr(grad_reverse(s_emb_inv[:,0:nfeat],lambda_val))
 
     def pred_firstEnc(self, x):        
         emb_inv = self.first_enc_inv(x).squeeze()
@@ -113,7 +114,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
 
     def pred_secondEnc(self, x):        
         emb_inv = self.second_enc_inv(x).squeeze()
-        return self.task_cl(emb_inv)
+        return self.task_cl2(emb_inv)
 
 
 
