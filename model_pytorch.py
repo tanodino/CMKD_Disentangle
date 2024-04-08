@@ -46,8 +46,9 @@ class ProjHead(torch.nn.Module):
 
     def forward(self,x):
         proj = self.l1(x)
-        proj = F.relu(proj)
         proj = self.bn1(proj)
+        proj = F.relu(proj)
+        
         #proj = self.l2(proj)
         #gelu_z = F.gelu(proj)
         return  proj#F.gelu(proj) - F.gelu(proj).detach() + F.relu(proj).detach()#F.relu(proj) #proj
