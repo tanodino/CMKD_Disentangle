@@ -100,23 +100,12 @@ class CrossSourceModelGRLv3(torch.nn.Module):
 
     def forward(self, x, lambda_val=1.):
         f_x, s_x = x
-        #f_emb = self.first_enc(f_x).squeeze()
-        #s_emb = self.second_enc(s_x).squeeze()
-        #nfeat = f_emb.shape[1]
         f_emb_inv = self.first_enc_inv(f_x).squeeze()
         f_emb_spec = self.first_enc_spec(f_x).squeeze()
         s_emb_inv = self.second_enc_inv(s_x).squeeze()
         s_emb_spec = self.second_enc_spec(s_x).squeeze()
-        '''
-        pred_f = self.task_cl(f_emb_inv)
-        pred_s = self.task_cl(s_emb_inv)
-        outer_product_f = torch.bmm(f_emb_inv.unsqueeze(2), pred_f.unsqueeze(1))
-        outer_product_f = outer_product_f.view(-1,outer_product_f.shape[1]*outer_product_f.shape[2])
-        outer_product_s = torch.bmm(s_emb_inv.unsqueeze(2), pred_s.unsqueeze(1))
-        outer_product_s = outer_product_s.view(-1,outer_product_s.shape[1]*outer_product_s.shape[2])
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), pred_f, pred_s, self.discr(grad_reverse(outer_product_f,lambda_val)), self.discr(grad_reverse(outer_product_s,lambda_val))
-        '''
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
+        nfeat = f_emb_inv.shape[1]//2
+        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl(s_emb_inv), self.discr(grad_reverse(f_emb_inv[:,0:nfeat],lambda_val)), self.discr(grad_reverse(s_emb_inv[:,0:nfeat],lambda_val))
 
     def pred_firstEnc(self, x):        
         emb_inv = self.first_enc_inv(x).squeeze()
