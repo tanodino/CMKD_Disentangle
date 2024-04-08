@@ -209,8 +209,8 @@ train_s_data, train_label_s = shuffle(train_s_data, train_labels)
 #DATALOADER TRAIN
 #dataloader_train = createDataLoader(train_ms_data, train_sar_data, train_labels, True, TRAIN_BATCH_SIZE)
 
-#dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-#dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
+dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
+dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
 
 #dataloader_train = createDataLoader4(train_f_data, train_s_data, train_label_f, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data1=first_prefix, type_data2=second_prefix)
 
@@ -253,24 +253,28 @@ ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
 #ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
 ridg_momentum = 0.1
 
+iteration_dataloader_train_s = iter(dataloader_train_s)
 for epoch in range(EPOCHS):
     start = time.time()
     model.train()
     tot_loss = 0.0
     den = 0
     lambda_ = 1.0
+    '''
     train_f_data, train_label_f = shuffle(train_f_data, train_label_f)
     train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
     #dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
     #dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
     dataloader_train = createDataLoader4(train_f_data, train_s_data, train_label_f, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data1=first_prefix, type_data2=second_prefix)
-    for x_batch_f, x_batch_s, y_batch_f, y_batch_s in dataloader_train:    
+    '''
+    #for x_batch_f, x_batch_s, y_batch_f, y_batch_s in dataloader_train:    
     #for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
     #    x_batch_f, y_batch_f = xy_f
     #    x_batch_s, y_batch_s = xy_s
     #for x_batch_s, y_batch_s in dataloader_train_s:
     #    x_batch_f, y_batch_f = next(iter(dataloader_train_f))
-
+    for x_batch_f, y_batch_f in dataloader_train_f:
+        x_batch_s, y_batch_s = next(iteration_dataloader_train_s)
         optimizer.zero_grad()
         x_batch_f = x_batch_f.to(device)
         x_batch_s = x_batch_s.to(device)
