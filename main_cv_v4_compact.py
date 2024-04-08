@@ -353,6 +353,7 @@ for epoch in range(EPOCHS):
         '''
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
+        '''
         emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
         all_y = torch.cat([y_batch_f,y_batch_s],dim=0)
         rational = torch.zeros(n_classes, x_batch_f.shape[0]+x_batch_s.shape[0], f_emb_inv.shape[1], device=device)
@@ -373,7 +374,7 @@ for epoch in range(EPOCHS):
         #loss = F.cross_entropy(logits, all_y)
 
         #loss = loss + 1. * loss_rational
-        
+        '''
         ############################################################ 
         
         loss.backward() # backward pass: backpropagate the prediction loss
@@ -404,3 +405,4 @@ for epoch in range(EPOCHS):
     final_string = final_string+" with training time %d"%((end-start))
     print(final_string)
     sys.stdout.flush()
+    torch.cuda.empty_cache()
