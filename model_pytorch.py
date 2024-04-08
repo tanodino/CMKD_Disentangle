@@ -46,8 +46,8 @@ class ProjHead(torch.nn.Module):
 
     def forward(self,x):
         proj = self.l1(x)
-        #proj = F.relu(proj)
-        #proj = self.bn1(proj)
+        proj = F.relu(proj)
+        proj = self.bn1(proj)
         #proj = self.l2(proj)
         #gelu_z = F.gelu(proj)
         return  proj#F.gelu(proj) - F.gelu(proj).detach() + F.relu(proj).detach()#F.relu(proj) #proj
@@ -99,19 +99,24 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         self.task_cl2 = nn.LazyLinear(num_classes)
         self.discr = FC_Classifier(256, 2)
 
+        self.projF = ProjHead(256)
+        self.projS = ProjHead(256)
+
     def forward(self, x, lambda_val=1.):
         f_x, s_x = x
         f_emb_inv = self.first_enc_inv(f_x).squeeze()
         f_emb_spec = self.first_enc_spec(f_x).squeeze()
         s_emb_inv = self.second_enc_inv(s_x).squeeze()
         s_emb_spec = self.second_enc_spec(s_x).squeeze()
+        
         nfeat = f_emb_inv.shape[1]//2
-        f_shared_discr = f_emb_inv
-        s_shared_discr = s_emb_inv
-        f_domain_discr = f_emb_spec[:,0:nfeat]
-        s_domain_discr = s_emb_spec[:,0:nfeat]
-        f_domain_useless = f_emb_spec[:,nfeat::]
-        s_domain_useless = s_emb_spec[:,nfeat::]
+        
+        f_shared_discr = f_emb_inv[:,0:nfeat]
+        s_shared_discr = s_emb_inv[:,0:nfeat]
+        f_domain_discr = f_emb_inv[:,nfeat::]
+        s_domain_discr = s_emb_inv[:,nfeat::]
+        f_domain_useless = self.projF(f_emb_spec)
+        s_domain_useless = self.projS(s_emb_spec)
 
         f_task_feat = torch.cat([f_shared_discr,f_domain_discr],dim=1)
         s_task_feat = torch.cat([s_shared_discr,s_domain_discr],dim=1)
@@ -124,17 +129,17 @@ class CrossSourceModelGRLv3(torch.nn.Module):
 
     def pred_firstEnc(self, x):        
         emb_inv = self.first_enc_inv(x).squeeze()
-        emb_spec = self.first_enc_spec(x).squeeze()
-        nfeat = emb_inv.shape[1]//2
-        task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
-        return self.task_cl(task_feat)
+        #emb_spec = self.first_enc_spec(x).squeeze()
+        #nfeat = emb_inv.shape[1]//2
+        #task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
+        return self.task_cl(emb_inv)
 
     def pred_secondEnc(self, x):        
         emb_inv = self.second_enc_inv(x).squeeze()
-        emb_spec = self.second_enc_spec(x).squeeze()
-        nfeat = emb_inv.shape[1]//2
-        task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
-        return self.task_cl(task_feat)
+        #emb_spec = self.second_enc_spec(x).squeeze()
+        #nfeat = emb_inv.shape[1]//2
+        #task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
+        return self.task_cl2(emb_inv)
 
 
 
