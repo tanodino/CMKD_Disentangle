@@ -305,7 +305,7 @@ for epoch in range(EPOCHS):
         #loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
         
-        #loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
         rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
         #rescaling = np.expand_dims(rescaling,-1)
         loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
