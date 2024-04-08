@@ -312,12 +312,14 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
-        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        loss_contra = scl( emb_scl , y_scl )
-        #y_scl = torch.cat([y_batch_f, y_batch_s])
+        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        
+        y_scl = torch.cat([y_batch_f, y_batch_s])
         #loss_contra1 = scl( emb_scl , y_scl )
+
+        loss_contra = scl( emb_scl , y_scl )
 
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
         #y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
@@ -330,7 +332,7 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_adv_dann + loss_pred_dom 
+        loss = loss_pred + loss_adv_dann + loss_pred_dom + loss_contra
 
         
         '''
