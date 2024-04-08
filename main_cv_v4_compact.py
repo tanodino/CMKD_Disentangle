@@ -241,6 +241,7 @@ model = model.to(device)
 
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
+loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
 scl = SupervisedContrastiveLoss()
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
@@ -302,6 +303,11 @@ for epoch in range(EPOCHS):
 
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+
+        loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
+        rescaling = np.expand_dims(rescaling,-1)
+        loss_pred = (loss_pred * rescaling) / np.sum(rescaling)
 
         emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
