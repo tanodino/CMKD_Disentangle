@@ -122,8 +122,8 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         f_task_feat = torch.cat([f_shared_discr,f_domain_discr],dim=1)
         s_task_feat = torch.cat([s_shared_discr,s_domain_discr],dim=1)
 
-        f_emb_dom = torch.cat([f_domain_discr,f_domain_useless],dim=1)
-        s_emb_dom = torch.cat([s_domain_discr,s_domain_useless],dim=1)
+        f_emb_dom = torch.cat([f_domain_discr,f_domain_useless],dim=0)
+        s_emb_dom = torch.cat([s_domain_discr,s_domain_useless],dim=0)
 
 
         return f_domain_discr, f_domain_useless, s_domain_discr, s_domain_useless, self.task_dom(f_emb_dom), self.task_dom(s_emb_dom), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_shared_discr,lambda_val)), self.discr(grad_reverse(s_shared_discr,lambda_val))

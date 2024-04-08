@@ -320,7 +320,8 @@ for epoch in range(EPOCHS):
         loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) )
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
-        y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
+        #y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
+        y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s),torch.zeros_like(pred_dom_s)] )
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
 
