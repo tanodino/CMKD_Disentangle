@@ -340,17 +340,17 @@ for epoch in range(EPOCHS):
         emb_scl_cl = nn.functional.normalize(tot_pred)
         loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
         
-        loss = loss_pred   + loss_contra_cl + loss_pred_dom #+ loss_adv_dann#+ loss_contra_sel
+        loss = loss_pred + loss_contra_cl + loss_pred_dom + loss_adv_dann#+ loss_adv_dann#+ loss_contra_sel
 
         
         
-        
+        '''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho 
         '''
-        '''
+        
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
         '''
