@@ -321,6 +321,9 @@ for epoch in range(EPOCHS):
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
+        print("tot_pred_dom ",tot_pred_dom.shape)
+        print("y_dom ",y_dom.shape)
+
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
 
