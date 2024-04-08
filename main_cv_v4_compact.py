@@ -234,8 +234,8 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-#model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
-model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+#model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
@@ -250,8 +250,8 @@ global_valid_f = 0
 global_valid_s = 0
 ema_weights = None
 ridg_init = torch.ones(n_classes, device='cuda')
-#ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
-ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
+ridg_rational_bank = torch.zeros(n_classes, n_classes, 512, device='cuda')
+#ridg_rational_bank = torch.zeros(n_classes, n_classes, 256, device='cuda')
 ridg_momentum = 0.1
 
 
@@ -340,16 +340,17 @@ for epoch in range(EPOCHS):
         emb_scl_cl = nn.functional.normalize(tot_pred)
         loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
         
-        loss = loss_pred + loss_adv_dann + loss_pred_dom  + loss_contra_cl #+ loss_contra_sel
+        loss = loss_pred + loss_adv_dann  + loss_contra_cl + loss_pred_dom#+ loss_contra_sel
 
         
-        '''
-        '''
+        
+        
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho 
-        
+        '''
+        '''
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
         emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
