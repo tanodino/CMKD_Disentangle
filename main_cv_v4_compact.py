@@ -347,9 +347,9 @@ for epoch in range(EPOCHS):
         #DANN GRL
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
-
-        loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         y_dom = torch.cat([ torch.ones_like(discr_f), torch.zeros_like(discr_s)] )
+        loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
+        
         #emb_scl_cl = nn.functional.softmax( tot_pred, dim=1 )
         emb_scl_cl = nn.functional.normalize(tot_pred)
         loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
