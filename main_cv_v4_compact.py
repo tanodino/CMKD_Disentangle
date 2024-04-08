@@ -234,8 +234,8 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-#model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
-model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+#model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
@@ -342,7 +342,7 @@ for epoch in range(EPOCHS):
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
-        loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_contra_sel# + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra_sel# + loss_contra_cl #+ loss_adv_dann#
 
         
         
