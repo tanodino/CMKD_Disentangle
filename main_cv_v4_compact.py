@@ -291,6 +291,8 @@ for epoch in range(EPOCHS):
         y_batch_f = y_batch_f.to(device)
         y_batch_s = y_batch_s.to(device)
         
+        f_emb_shared, \
+        s_emb_shared, \
         f_emb_inv, \
         f_emb_spec, \
         s_emb_inv, \
@@ -305,25 +307,14 @@ for epoch in range(EPOCHS):
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
-        
-        #loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
-        #rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
-        #rescaling = np.expand_dims(rescaling,-1)
-        #loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
-        #loss_pred = nn.functional.cross_entropy( tot_pred, torch.cat([y_batch_f, y_batch_s]), weight=torch.tensor(rescaling).to(device))
-
-
         emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
-        emb_spec_switch = nn.functional.normalize( torch.cat([s_emb_spec, f_emb_spec]) )
+        emb_shared = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared]) )
 
-        loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) )
+        loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) ) + torch.mean( torch.sum(emb_inv * emb_shared, dim=1) )
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
-        #print("tot_pred_dom ",tot_pred_dom.shape)
-        #print("y_dom ",y_dom.shape)
-
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
 
