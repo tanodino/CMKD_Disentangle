@@ -321,8 +321,8 @@ for epoch in range(EPOCHS):
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
-        print("tot_pred_dom ",tot_pred_dom.shape)
-        print("y_dom ",y_dom.shape)
+        #print("tot_pred_dom ",tot_pred_dom.shape)
+        #print("y_dom ",y_dom.shape)
 
         loss_pred_dom =loss_fn(tot_pred_dom, y_dom)
 
@@ -347,8 +347,9 @@ for epoch in range(EPOCHS):
         #DANN GRL
         
         tot_pred_adv = torch.cat([discr_f, discr_s])
-        loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
 
+        loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
+        y_dom = torch.cat([ torch.ones_like(discr_f), torch.zeros_like(discr_s)] )
         #emb_scl_cl = nn.functional.softmax( tot_pred, dim=1 )
         emb_scl_cl = nn.functional.normalize(tot_pred)
         loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
