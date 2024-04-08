@@ -130,7 +130,7 @@ method = sys.argv[5]
 
 #python main_cs.py PAVIA_UNIVERSITY HALF FULL 0 ORTHO
 
-prefix_method = "vTRIAL"
+prefix_method = "v5"
 #CREATE FOLDER TO STORE RESULTS
 dir_name_f = dir_+"/OUR-%s_%s_%s"%(prefix_method, first_prefix, method)
 if not os.path.exists(dir_name_f):
