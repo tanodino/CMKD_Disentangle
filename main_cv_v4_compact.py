@@ -330,15 +330,16 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         
-        loss = loss_pred + loss_adv_dann#+ loss_pred_dom 
+        loss = loss_pred + loss_adv_dann + loss_pred_dom 
 
         
+        '''
         '''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho
-        '''
+        
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
         emb_inv = torch.cat([f_emb_inv, s_emb_inv],dim=0)
