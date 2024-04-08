@@ -110,13 +110,15 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         s_shared_discr = s_emb_inv
         f_domain_discr = f_emb_spec[:,0:nfeat]
         s_domain_discr = s_emb_spec[:,0:nfeat]
-        #f_domain_useless = f_emb_spec[:,nfeat::]
-        #s_domain_useless = s_emb_spec[:,nfeat::]
+        f_domain_useless = f_emb_spec[:,nfeat::]
+        s_domain_useless = s_emb_spec[:,nfeat::]
 
         f_task_feat = torch.cat([f_shared_discr,f_domain_discr],dim=1)
         s_task_feat = torch.cat([s_shared_discr,s_domain_discr],dim=1)
 
-        return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
+
+        return f_domain_discr, f_domain_useless, s_domain_discr, s_domain_useless, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
+        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
 
         #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl2(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
 
