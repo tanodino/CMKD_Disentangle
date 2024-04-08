@@ -242,7 +242,7 @@ model = model.to(device)
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
 loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
-scl = SupervisedContrastiveLoss()
+scl = SupervisedContrastiveLoss(temperature=1.)
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
@@ -302,13 +302,13 @@ for epoch in range(EPOCHS):
         discr_s =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
 
         tot_pred = torch.cat([pred_f, pred_s])   
-        #loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
         
-        loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
-        rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
+        #loss_pred = loss_fn_2( tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+        #rescaling = np.concatenate( [np.ones(y_batch_f.shape[0]), np.ones(y_batch_f.shape[0])*2],axis=0)
         #rescaling = np.expand_dims(rescaling,-1)
-        loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
+        #loss_pred = (loss_pred * torch.tensor(rescaling).to(device)).mean() #/ torch.tensor(np.sum(rescaling)).to(device)
         #loss_pred = nn.functional.cross_entropy( tot_pred, torch.cat([y_batch_f, y_batch_s]), weight=torch.tensor(rescaling).to(device))
 
 
