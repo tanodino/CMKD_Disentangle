@@ -352,7 +352,7 @@ for epoch in range(EPOCHS):
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
-        loss = loss_pred + loss_pred_dom  + loss_adv_dann #loss_contra_sel + # + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_dom  + loss_adv_dann + loss_contra_sel #+ # + loss_contra_cl #+ loss_adv_dann#
 
         
         
