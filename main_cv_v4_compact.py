@@ -234,7 +234,8 @@ dataloader_test = createDataLoader(test_f_data, test_s_data, test_labels, False,
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 #model = CrossSourceModel(input_channel_first=ms_data.shape[1], input_channel_second=sar_data.shape[1])
-model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+#model = CrossSourceModelGRLv2(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
+model = CrossSourceModelGRL(input_channel_first=first_data.shape[1], input_channel_second=second_data.shape[1],  num_classes=n_classes, f_encoder=first_enc, s_encoder=second_enc)
 model = model.to(device)
 
 
@@ -314,14 +315,16 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        
-        y_scl = torch.cat([y_batch_f, y_batch_s])
-        #loss_contra1 = scl( emb_scl , y_scl )
-
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
+        #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
+
+        
+        #loss_contra1 = scl( emb_scl , y_scl )
+        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        y_scl_sel = torch.cat([y_batch_f, y_batch_s])
+        loss_contra_sel = scl( emb_scl_sel , y_scl_sel )
 
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
         #y_scl = torch.cat([torch.zeros_like(y_batch_f), torch.ones_like(y_batch_s)])
@@ -335,9 +338,9 @@ for epoch in range(EPOCHS):
 
         #emb_scl_cl = nn.functional.softmax( tot_pred, dim=1 )
         emb_scl_cl = nn.functional.normalize(tot_pred)
-        loss_contra_cl = scl( emb_scl_cl , y_scl )
+        loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
         
-        loss = loss_pred + loss_adv_dann + loss_pred_dom + loss_contra + loss_contra_cl
+        loss = loss_pred + loss_adv_dann + loss_pred_dom  + loss_contra_cl #+ loss_contra_sel
 
         
         '''
@@ -345,7 +348,7 @@ for epoch in range(EPOCHS):
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
-            loss = loss + loss_ortho
+            loss = loss + loss_ortho 
         
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
