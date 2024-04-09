@@ -243,7 +243,7 @@ model = model.to(device)
 learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
 loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
-scl = SupervisedContrastiveLoss(temperature=1.)
+scl = SupervisedContrastiveLoss(temperature=.1)
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
