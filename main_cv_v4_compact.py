@@ -329,10 +329,10 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        emb_scl = nn.functional.normalize( torch.cat([f_shared_discr, s_shared_discr, f_domain_discr, s_domain_discr]) )
+        #emb_scl = nn.functional.normalize( torch.cat([f_shared_discr, s_shared_discr, f_domain_discr, s_domain_discr]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
-        loss_contra = scl( emb_scl , y_scl )
+        #y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
+        loss_contra = 0#scl( emb_scl , y_scl )
 
         
         #loss_contra1 = scl( emb_scl , y_scl )
