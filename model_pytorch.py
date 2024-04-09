@@ -97,8 +97,8 @@ class CrossSourceModelGRLv3(torch.nn.Module):
 
         self.task_dom = nn.LazyLinear(2)
         self.task_dom2 = nn.LazyLinear(2)
-        #self.task_cl = nn.LazyLinear(num_classes)
-        self.task_cl = FC_Classifier(256, num_classes)
+        self.task_cl = nn.LazyLinear(num_classes)
+        #self.task_cl = FC_Classifier(256, num_classes)
         
         self.task_cl2 = nn.LazyLinear(num_classes)
         
