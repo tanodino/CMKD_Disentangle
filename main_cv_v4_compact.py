@@ -291,12 +291,12 @@ for epoch in range(EPOCHS):
         y_batch_f = y_batch_f.to(device)
         y_batch_s = y_batch_s.to(device)
         
-        f_emb_shared, \
-        s_emb_shared, \
-        f_emb_dom_info, \
-        f_emb_dom_uninfo, \
-        s_emb_dom_info, \
-        s_emb_dom_uninfo, \
+        f_shared_discr, \
+        s_shared_discr, \
+        f_domain_discr, \
+        f_domain_useless, \
+        s_domain_discr, \
+        s_domain_useless, \
         pred_dom_f, \
         pred_dom_s, \
         pred_f, \
@@ -307,9 +307,9 @@ for epoch in range(EPOCHS):
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
-        emb_dom_info = nn.functional.normalize( torch.cat([f_emb_dom_info, s_emb_dom_info]) )
-        emb_dom_uninfo = nn.functional.normalize( torch.cat([f_emb_dom_uninfo, s_emb_dom_uninfo]) )
-        emb_shared = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared]) )
+        emb_dom_info = nn.functional.normalize( torch.cat([f_domain_discr, s_domain_discr]) )
+        emb_dom_uninfo = nn.functional.normalize( torch.cat([f_domain_useless, s_domain_useless]) )
+        emb_shared = nn.functional.normalize( torch.cat([f_shared_discr, s_shared_discr]) )
 
         loss_ortho = torch.mean( torch.sum(emb_dom_info * emb_dom_uninfo, dim=1) ) + torch.mean( torch.sum(emb_dom_info * emb_shared, dim=1) )
 
@@ -319,14 +319,19 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared, f_emb_dom_info, s_emb_dom_info]) )
+        emb_scl = nn.functional.normalize( torch.cat([f_shared_discr, s_shared_discr, f_domain_discr, s_domain_discr]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
         
         #loss_contra1 = scl( emb_scl , y_scl )
-        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared]) )
+        f_emb_discr = torch.cat([f_domain_discr, f_domain_discr],dim=1)
+        s_emb_discr = torch.cat([s_domain_discr, s_domain_discr],dim=1)
+        
+        #emb_scl_sel = nn.functional.normalize( torch.cat([f_domain_discr, s_domain_discr]) )
+        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_discr, s_emb_discr]) )
+        
         y_scl_sel = torch.cat([y_batch_f, y_batch_s])
         loss_contra_sel = scl( emb_scl_sel , y_scl_sel )
 
@@ -347,17 +352,17 @@ for epoch in range(EPOCHS):
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
-        loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra_sel # + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra_sel + loss_ortho # + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
 
         
         
-        
+        '''
         if method == "CONTRA":
             loss = loss + loss_contra  #loss_ortho #+ loss_contra#+ loss_contra #  #
         elif method == "ORTHO":
             loss = loss + loss_ortho 
         '''
-        '''
+        
         #### LOSS RATIONALE DOMAIN GENERALIZATION #############
         #### ICCV 2023 - Domain Generalization via Rationale Invariance
         '''
