@@ -244,7 +244,7 @@ learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
 loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
 scl = SupervisedContrastiveLoss(temperature=1.)
-optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE, weight_decay=1e-3)
 
 gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
 # Loop through the data
