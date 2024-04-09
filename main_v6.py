@@ -244,7 +244,7 @@ learning_rate = 0.0001
 loss_fn = nn.CrossEntropyLoss()
 loss_fn_2 = nn.CrossEntropyLoss(reduction='none')
 scl = SupervisedContrastiveLoss(temperature=1.)
-optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE, weight_decay=1e-3)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
 
 gradient_decay = CosineDecay(max_value=0, min_value=1., num_loops=5.0)
 # Loop through the data
@@ -263,23 +263,7 @@ for epoch in range(EPOCHS):
     tot_loss = 0.0
     den = 0
     lambda_ = 1.0
-    '''
-    train_f_data, train_label_f = shuffle(train_f_data, train_label_f)
-    train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
-    #dataloader_train_f = createDataLoader2(train_f_data, train_label_f, True, transform, TRAIN_BATCH_SIZE, type_data=first_prefix)
-    #dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    dataloader_train = createDataLoader4(train_f_data, train_s_data, train_label_f, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data1=first_prefix, type_data2=second_prefix)
-    '''
-    #for x_batch_f, x_batch_s, y_batch_f, y_batch_s in dataloader_train:    
-    #for xy_s, xy_f in zip(dataloader_train_s, dataloader_train_f):
-    #    x_batch_f, y_batch_f = xy_f
-    #    x_batch_s, y_batch_s = xy_s
-    #for x_batch_s, y_batch_s in dataloader_train_s:
-    #    x_batch_f, y_batch_f = next(iter(dataloader_train_f))
-    #train_s_data, train_label_s = shuffle(train_s_data, train_label_s)
-    #dataloader_train_s = createDataLoader2(train_s_data, train_label_s, True, transform, TRAIN_BATCH_SIZE, type_data=second_prefix)
-    #iteration_dataloader_train_s = iter(dataloader_train_s)
-    
+
     for xy_f, xy_s in zip(dataloader_train_f,dataloader_train_s):
     #for x_batch_f, y_batch_f in dataloader_train_f:
     #    x_batch_s, y_batch_s = next(iteration_dataloader_train_s)
