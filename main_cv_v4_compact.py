@@ -293,10 +293,10 @@ for epoch in range(EPOCHS):
         
         f_emb_shared, \
         s_emb_shared, \
-        f_emb_inv, \
-        f_emb_spec, \
-        s_emb_inv, \
-        s_emb_spec, \
+        f_emb_dom_info, \
+        f_emb_dom_uninfo, \
+        s_emb_dom_info, \
+        s_emb_dom_uninfo, \
         pred_dom_f, \
         pred_dom_s, \
         pred_f, \
@@ -307,11 +307,11 @@ for epoch in range(EPOCHS):
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
 
-        emb_inv = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
-        emb_spec = nn.functional.normalize( torch.cat([f_emb_spec, s_emb_spec]) )
+        emb_dom_info = nn.functional.normalize( torch.cat([f_emb_dom_info, s_emb_dom_info]) )
+        emb_dom_uninfo = nn.functional.normalize( torch.cat([f_emb_dom_uninfo, s_emb_dom_uninfo]) )
         emb_shared = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared]) )
 
-        loss_ortho = torch.mean( torch.sum(emb_inv * emb_spec, dim=1) ) + torch.mean( torch.sum(emb_inv * emb_shared, dim=1) )
+        loss_ortho = torch.mean( torch.sum(emb_dom_info * emb_dom_uninfo, dim=1) ) + torch.mean( torch.sum(emb_dom_info * emb_shared, dim=1) )
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )
@@ -319,14 +319,14 @@ for epoch in range(EPOCHS):
 
 
         #scl
-        emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv, f_emb_spec, s_emb_spec]) )
+        emb_scl = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared, f_emb_dom_info, s_emb_dom_info]) )
         #emb_scl = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
         y_scl = torch.cat([y_batch_f, y_batch_s, torch.ones_like(y_batch_f)*n_classes, torch.ones_like(y_batch_s)*(n_classes+1)  ])
         loss_contra = scl( emb_scl , y_scl )
 
         
         #loss_contra1 = scl( emb_scl , y_scl )
-        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_inv, s_emb_inv]) )
+        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_shared, s_emb_shared]) )
         y_scl_sel = torch.cat([y_batch_f, y_batch_s])
         loss_contra_sel = scl( emb_scl_sel , y_scl_sel )
 
