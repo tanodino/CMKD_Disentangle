@@ -329,8 +329,8 @@ for epoch in range(EPOCHS):
         f_emb_discr = torch.cat([f_domain_discr, f_domain_discr],dim=1)
         s_emb_discr = torch.cat([s_domain_discr, s_domain_discr],dim=1)
         
-        #emb_scl_sel = nn.functional.normalize( torch.cat([f_domain_discr, s_domain_discr]) )
-        emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_discr, s_emb_discr]) )
+        emb_scl_sel = nn.functional.normalize( torch.cat([f_domain_discr, s_domain_discr]) )
+        #emb_scl_sel = nn.functional.normalize( torch.cat([f_emb_discr, s_emb_discr]) )
         
         y_scl_sel = torch.cat([y_batch_f, y_batch_s])
         loss_contra_sel = scl( emb_scl_sel , y_scl_sel )
@@ -352,7 +352,7 @@ for epoch in range(EPOCHS):
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
-        loss = loss_pred + loss_pred_dom + loss_adv_dann + loss_contra_sel + loss_ortho # + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_dom  + loss_contra_sel + loss_ortho #+ loss_adv_dann + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
 
         
         
