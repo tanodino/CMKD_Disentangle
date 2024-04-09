@@ -102,6 +102,8 @@ class CrossSourceModelGRLv4(torch.nn.Module):
         self.task_cl2 = nn.LazyLinear(num_classes)
         self.task_cl3 = nn.LazyLinear(num_classes)
         
+        self.task_cl4 = nn.LazyLinear(num_classes)
+        self.task_cl5 = nn.LazyLinear(num_classes)
         
         
         self.discr = FC_Classifier(256, 2)
@@ -143,7 +145,8 @@ class CrossSourceModelGRLv4(torch.nn.Module):
                pred_f_emb_dom, pred_s_emb_dom, \
                self.task_cl(f_task_feat), self.task_cl2(s_task_feat), \
                self.discr(grad_reverse(f_shared_discr,lambda_val)), self.discr(grad_reverse(s_shared_discr,lambda_val)), \
-               self.task_cl3(f_shared_discr), self.task_cl3(s_shared_discr), 
+               self.task_cl3(f_shared_discr), self.task_cl3(s_shared_discr), \
+               self.task_cl4(f_domain_discr),  self.task_cl5(s_domain_discr)
         #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
 
         #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl2(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))

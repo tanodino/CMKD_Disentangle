@@ -288,10 +288,14 @@ for epoch in range(EPOCHS):
         discr_f, \
         discr_s, \
         pred_f_shared, \
-        pred_s_shared =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
+        pred_s_shared, \
+        pred_task_f_domain_discr, \
+        pred_task_s_domain_discr =  model([x_batch_f, x_batch_s], lambda_val=lambda_)
 
         tot_pred = torch.cat([pred_f, pred_s])   
         loss_pred = loss_fn(tot_pred, torch.cat([y_batch_f, y_batch_s]) )
+
+        loss_pred_domain_discr = loss_fn( torch.cat([pred_task_f_domain_discr, pred_task_s_domain_discr]), torch.cat([y_batch_f, y_batch_s]) )
 
         tot_pred_shared = torch.cat([pred_f_shared, pred_s_shared]) 
         loss_pred_shared = loss_fn(tot_pred_shared, torch.cat([y_batch_f, y_batch_s]) )
@@ -346,7 +350,7 @@ for epoch in range(EPOCHS):
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
-        loss = loss_pred + loss_pred_shared + loss_pred_dom  + loss_adv_dann  + loss_ortho #+ loss_contra_sel#+ loss_contra_sel#+ loss_adv_dann + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_shared + loss_pred_domain_discr + loss_pred_dom  + loss_adv_dann  + loss_ortho #+ loss_contra_sel#+ loss_contra_sel#+ loss_adv_dann + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
 
         
         
