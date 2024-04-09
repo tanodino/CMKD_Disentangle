@@ -316,9 +316,12 @@ for epoch in range(EPOCHS):
         emb_dom_uninfo = nn.functional.normalize( torch.cat([f_domain_useless, s_domain_useless]) )
         emb_shared = nn.functional.normalize( torch.cat([f_shared_discr, s_shared_discr]) )
 
+        #loss_ortho = torch.mean( torch.sum(emb_dom_info * emb_dom_uninfo, dim=1) ) \
+        #             + torch.mean( torch.sum(emb_dom_info * emb_shared, dim=1) ) \
+
         loss_ortho = torch.mean( torch.sum(emb_dom_info * emb_dom_uninfo, dim=1) ) \
-                     + torch.mean( torch.sum(emb_dom_info * emb_shared, dim=1) ) \
-                     + torch.mean( torch.sum(emb_dom_uninfo * emb_shared, dim=1) )
+                     + torch.mean( torch.sum(torch.cat([emb_dom_info, emb_dom_uninfo],dim=1) * emb_shared, dim=1) )
+
 
         tot_pred_dom = torch.cat([pred_dom_f, pred_dom_s])
         y_dom = torch.cat([ torch.ones_like(pred_dom_f), torch.zeros_like(pred_dom_s)] )

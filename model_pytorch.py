@@ -120,8 +120,11 @@ class CrossSourceModelGRLv3(torch.nn.Module):
         nfeat = f_emb_inv.shape[1]//2
         #print("nfeat forward %d"%nfeat)
         
-        f_shared_discr = self.projF(f_emb_inv)
-        s_shared_discr = self.projS(s_emb_inv)
+        #f_shared_discr = self.projF(f_emb_inv)
+        #s_shared_discr = self.projS(s_emb_inv)
+        f_shared_discr = f_emb_inv
+        s_shared_discr = s_emb_inv
+        
         f_domain_discr = f_emb_spec[:,0:nfeat:]
         s_domain_discr = s_emb_spec[:,0:nfeat:]
         f_domain_useless = f_emb_spec[:,nfeat::]
@@ -151,7 +154,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
     def pred_firstEnc(self, x):        
         emb_inv = self.first_enc_inv(x).squeeze()
         nfeat = emb_inv.shape[1]//2
-        emb_inv = self.projF(emb_inv)
+        #emb_inv = self.projF(emb_inv)
         emb_spec = self.first_enc_spec(x).squeeze()
         
         #print("nfeat pred_firstEnc %d"%nfeat)
@@ -163,7 +166,7 @@ class CrossSourceModelGRLv3(torch.nn.Module):
     def pred_secondEnc(self, x):        
         emb_inv = self.second_enc_inv(x).squeeze()
         nfeat = emb_inv.shape[1]//2
-        emb_inv = self.projS(emb_inv)
+        #emb_inv = self.projS(emb_inv)
         emb_spec = self.second_enc_spec(x).squeeze()
         
         task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
