@@ -377,7 +377,7 @@ for epoch in range(EPOCHS):
         loss_contra5 = supConLoss(emb_aggr, y_cl)
 
 
-        loss = loss_pred + loss_pred_dom + .2* (loss_contra1 + loss_contra2 + loss_contra3 + loss_contra4 + loss_contra5) #+ loss_contra_sel#+ loss_contra_sel#+ loss_adv_dann + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
+        loss = loss_pred + loss_pred_dom + .1* (loss_contra1 + loss_contra2 + loss_contra3 + loss_contra4 + loss_contra5) #+ loss_contra_sel#+ loss_contra_sel#+ loss_adv_dann + loss_adv_dann #+ # + loss_contra_cl #+ loss_adv_dann#
 
         
         
