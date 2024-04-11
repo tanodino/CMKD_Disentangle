@@ -60,7 +60,7 @@ class ProjHead(torch.nn.Module):
 
 class CrossSourceModelGRLv10(torch.nn.Module):
     def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
-        super(CrossSourceModelGRLv4, self).__init__()
+        super(CrossSourceModelGRLv10, self).__init__()
         self.first_enc_inv = None
         self.second_enc_inv = None
         self.first_enc_spec = None
