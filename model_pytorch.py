@@ -98,7 +98,7 @@ class CrossSourceModelGRLv10(torch.nn.Module):
             self.second_enc_spec = ModelEncoderLeNet()
 
         self.task_dom = FC_Classifier(256, 2)#nn.LazyLinear(2)
-        
+        self.task_dom2 = FC_Classifier(256, 2)
         #self.task_dom2 = nn.LazyLinear(2)
         self.task_cl = nn.LazyLinear(num_classes)
         #self.task_cl = FC_Classifier(256, num_classes)
@@ -140,8 +140,8 @@ class CrossSourceModelGRLv10(torch.nn.Module):
         
         #print("task_feat forward ",f_task_feat.shape)
 
-        pred_f_emb_dom = torch.cat( [self.task_dom(f_domain_discr), self.task_dom(f_domain_useless)], dim=0)
-        pred_s_emb_dom = torch.cat( [self.task_dom(s_domain_discr), self.task_dom(s_domain_useless)], dim=0)
+        pred_f_emb_dom = torch.cat( [self.task_dom(f_domain_discr), self.task_dom2(f_domain_useless)], dim=0)
+        pred_s_emb_dom = torch.cat( [self.task_dom(s_domain_discr), self.task_dom2(s_domain_useless)], dim=0)
 
 
         #pred_emb_dom = torch.cat([f_domain_discr,f_domain_useless],dim=0)
