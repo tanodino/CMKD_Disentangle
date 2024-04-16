@@ -67,7 +67,7 @@ folder_name_f = dir_+"/OUR-ABLA%d_%s"%(abla_num, first_prefix)
 folder_name_s = dir_+"/OUR-ABLA%d_%s"%(abla_num, second_prefix)#
 
 first_enc = hashPREFIX2SOURCE[first_prefix]
-second_enc = hashPREFIX2SOURCE[seocnd_prefix]
+second_enc = hashPREFIX2SOURCE[second_prefix]
 
 first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
 second_data = np.load("%s/%s_data_normalized.npy"%(dir_,second_prefix))
