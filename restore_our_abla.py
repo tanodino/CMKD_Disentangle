@@ -59,7 +59,7 @@ dir_ = sys.argv[1]
 first_prefix = sys.argv[2]
 second_prefix = sys.argv[3]
 #method = sys.argv[4]
-abla_num = sys.argv[4]
+abla_num = int(sys.argv[4])
 
 #dir_name_f = dir_+"/OUR-ABLA%d_%s"%(abla_num, first_prefix)
 
