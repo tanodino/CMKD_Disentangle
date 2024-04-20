@@ -346,8 +346,8 @@ for epoch in range(EPOCHS):
         loss_adv_dann = loss_fn( tot_pred_adv, y_dom )    
         
         #emb_scl_cl = nn.functional.softmax( tot_pred, dim=1 )
-        emb_scl_cl = nn.functional.normalize(tot_pred)
-        loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
+        #emb_scl_cl = nn.functional.normalize(tot_pred)
+        #loss_contra_cl = scl( emb_scl_cl , y_scl_sel )
         
         #loss = loss_pred  + loss_pred_dom + loss_adv_dann + loss_ortho
 
