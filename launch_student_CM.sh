@@ -4,7 +4,7 @@ do
         do
             for v in 0 1
             do
-                python student.py $1 $2 $3 $k $v $i
+                python student_CM.py $1 $2 $3 $k $v $i
             done
         done
     done

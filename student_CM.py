@@ -140,7 +140,6 @@ z_score_norm = int(sys.argv[5]) # 0 | 1
 
 run_id = int(sys.argv[6])
 
-
 #CREATE FOLDER TO STORE RESULTS
 dir_name = None
 if z_score_norm:
