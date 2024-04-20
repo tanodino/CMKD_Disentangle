@@ -26,10 +26,9 @@ warnings.filterwarnings("ignore")
 def getTeacherModel(dir_, prefix, labels, run_id, hashPREFIX2SOURCE):
     folder_name = dir_+"/MONO_%s"%prefix
     first_data = np.load("%s/%s_data_normalized.npy"%(dir_,prefix))
-    second_data = None
     n_classes = len(np.unique(labels))
     
-    model = MonoSourceModel(input_channel_first=second_data.shape[1], encoder=hashPREFIX2SOURCE[prefix], num_classes=n_classes)
+    model = MonoSourceModel(input_channel_first=first_data.shape[1], encoder=hashPREFIX2SOURCE[prefix], num_classes=n_classes)
         
     model = model.to(device)
     model.load_state_dict(torch.load(folder_name+"/%d.pth"%run_id))
