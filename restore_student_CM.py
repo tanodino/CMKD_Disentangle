@@ -55,7 +55,7 @@ folder_name = None
 if withNorm:
     folder_name = dir_+"/STUDENT_CM_%s_%s_%s_ZNORM"%(first_prefix, second_prefix, kd_loss_name)
 else:
-    folder_name = dir_+"/STUDENT_%s_%s_%s"%(first_prefix, second_prefix, kd_loss_name)
+    folder_name = dir_+"/STUDENT_CM_%s_%s_%s"%(first_prefix, second_prefix, kd_loss_name)
 
 second_data = None
 
