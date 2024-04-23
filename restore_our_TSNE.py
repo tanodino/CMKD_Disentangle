@@ -24,7 +24,11 @@ def plotEmb(emb, test_labels, outFileName):
 
     pca = PCA(n_components=50)
     pca_result = pca.fit_transform(emb)
-    
+
+    scaler = MinMaxScaler()
+    pca_result = scaler.fit_transform(pca_result)
+
+
     X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=3).fit_transform(pca_result)
     plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping)#, s=area, c=colors, alpha=0.5)
     plt.savefig(outFileName+".png")
