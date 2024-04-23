@@ -108,7 +108,7 @@ first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
 second_data = np.load("%s/%s_data_normalized.npy"%(dir_,second_prefix))
 labels = np.load("%s/labels.npy"%dir_)
 
-n_samples = 100
+n_samples = 50
 
 
 
@@ -143,13 +143,13 @@ for i in range(5):
     emb_inv, emb_task, emb_irrelevant = getEmbeddings(model, model_weights_fileName_f, test_f_data, test_labels, first=True)
 
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
-    plotEmb(emb_task, test_labels, "%s_%s_task_%d"%(dir_,first_prefix, i))
-    plotEmb(emb_irrelevant, test_labels, "%s_%s_irrelevant_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
 
 
     emb_inv, emb_task, emb_irrelevant = getEmbeddings(model, model_weights_fileName_s, test_s_data, test_labels, first=False)
 
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,second_prefix, i) )
-    plotEmb(emb_task, test_labels, "%s_%s_task_%d"%(dir_,second_prefix, i))
-    plotEmb(emb_irrelevant, test_labels, "%s_%s_irrelevant_%d"%(dir_,second_prefix, i))
+    plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,second_prefix, i))
+    plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,second_prefix, i))
     exit()
