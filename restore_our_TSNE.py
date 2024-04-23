@@ -153,4 +153,4 @@ for i in range(5):
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,second_prefix, i) )
     plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,second_prefix, i))
     plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,second_prefix, i))
-    #exit()
+    exit()
