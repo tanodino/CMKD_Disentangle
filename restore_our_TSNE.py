@@ -36,7 +36,7 @@ def selectRandomSamples(first_data, second_data, labels, n_samples):
 def getEmbeddings(model, model_weights_fileName, test_data, test_labels, first=True):
     model.load_state_dict(torch.load(model_weights_fileName))
     dataloader_test = createDataLoader(test_data, test_labels, False, 512)
-    emb_inv, emb_task, emb_irrelevant = getEmbs(model, dataloader_test, device, first=True)
+    emb_inv, emb_task, emb_irrelevant = getEmbs(model, dataloader_test, device, first=first)
     return emb_inv, emb_task, emb_irrelevant
 
 
