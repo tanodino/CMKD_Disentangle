@@ -93,7 +93,7 @@ second_data = np.load("%s/%s_data_normalized.npy"%(dir_,second_prefix))
 labels = np.load("%s/labels.npy"%dir_)
 
 n_samples = 50
-first_data, second_data, labels = selectRandomSamples(first_data, second_data, labels, n_samples)
+
 
 
 n_classes = len(np.unique(labels))
@@ -122,6 +122,7 @@ for i in range(5):
     test_s_data = second_data[test_idx]
     test_labels = labels[test_idx]
 
+    test_f_data, test_s_data, test_labels = selectRandomSamples(test_f_data, test_s_data, test_labels, n_samples)
     
     emb_inv, emb_task, emb_irrelevant = getEmbeddings(model, model_weights_fileName_f, test_f_data, test_labels, first=True)
 
