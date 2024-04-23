@@ -14,6 +14,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
 def plotEmb(emb, test_labels, outFileName):
+
+    colors = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'magenta', 'teal', 'maroon']
+
+    colorMapping = [colors[i] for i in test_labels]
+
     scaler = MinMaxScaler()
     emb = scaler.fit_transform(emb)
 
@@ -21,7 +26,7 @@ def plotEmb(emb, test_labels, outFileName):
     pca_result = pca.fit_transform(emb)
     
     X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=3).fit_transform(pca_result)
-    plt.scatter(X_embedded[:,0], X_embedded[:,1])#, s=area, c=colors, alpha=0.5)
+    plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping)#, s=area, c=colors, alpha=0.5)
     plt.savefig(outFileName+".png")
 
 def selectRandomSamples(first_data, second_data, labels, n_samples):
@@ -31,7 +36,7 @@ def selectRandomSamples(first_data, second_data, labels, n_samples):
     for l in np.unique(labels):
         idx = np.where(labels == l)[0]
         idx = shuffle(idx)
-        idx = idx[0:50]
+        idx = idx[0:n_samples]
         new_labels.append( np.ones( len(idx))*l  )
         new_first_data.append(first_data[idx])
         new_second_data.append(second_data[idx])
@@ -142,3 +147,4 @@ for i in range(5):
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,second_prefix, i) )
     plotEmb(emb_task, test_labels, "%s_%s_task_%d"%(dir_,second_prefix, i))
     plotEmb(emb_irrelevant, test_labels, "%s_%s_irrelevant_%d"%(dir_,second_prefix, i))
+    exit()
