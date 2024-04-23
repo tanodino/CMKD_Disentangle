@@ -17,7 +17,7 @@ def plotEmb(emb, test_labels, outFileName):
 
     colors = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'magenta', 'teal', 'maroon']
 
-    colorMapping = [colors[i] for i in test_labels]
+    colorMapping = [colors[i.astype("int")] for i in test_labels]
 
     scaler = MinMaxScaler()
     emb = scaler.fit_transform(emb)
