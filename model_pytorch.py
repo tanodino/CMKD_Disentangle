@@ -55,132 +55,6 @@ class ProjHead(torch.nn.Module):
         #return proj
 
 
-
-class CrossSourceModelGRLv11(torch.nn.Module):
-    def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
-        super(CrossSourceModelGRLv11, self).__init__()
-        self.first_enc_inv = None
-        self.second_enc_inv = None
-        self.first_enc_spec = None
-        self.second_enc_spec = None
-
-
-        if f_encoder == 'image' or f_encoder == 'spectro' or f_encoder== 'thermal':
-            first_enc_inv = resnet18(weights=None)
-            first_enc_inv.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
-            self.first_enc_inv = nn.Sequential(*list(first_enc_inv.children())[:-1])
-
-            first_enc_spec = resnet18(weights=None)
-            first_enc_spec.conv1 = nn.Conv2d(input_channel_first, 64, kernel_size=7, stride=2, padding=3,bias=False)
-            self.first_enc_spec = nn.Sequential(*list(first_enc_spec.children())[:-1])
-            
-        #elif f_encoder == 'hyper':
-        #    self.first_enc = ModelEncoderHyper(hidden_dims=1024)
-        elif f_encoder == 'mnist' :
-            self.first_enc_inv = ModelEncoderLeNet()
-            self.first_enc_spec = ModelEncoderLeNet()
-
-        if s_encoder== 'image' or s_encoder == 'spectro' or s_encoder== 'thermal':
-            second_enc_inv = resnet18(weights=None)
-            second_enc_inv.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
-            self.second_enc_inv = nn.Sequential(*list(second_enc_inv.children())[:-1])
-
-            second_enc_spec = resnet18(weights=None)
-            second_enc_spec.conv1 = nn.Conv2d(input_channel_second, 64, kernel_size=7, stride=2, padding=3,bias=False)
-            self.second_enc_spec = nn.Sequential(*list(second_enc_spec.children())[:-1])
-
-        #elif s_encoder == 'hyper':
-        #    self.second_enc = ModelEncoderHyper(hidden_dims=1024)
-        elif s_encoder == "mnist":
-            self.second_enc_inv = ModelEncoderLeNet()
-            self.second_enc_spec = ModelEncoderLeNet()
-
-        self.task_dom = FC_Classifier(256, 2)#nn.LazyLinear(2)
-        #self.task_dom2 = FC_Classifier(256, 2)
-        
-        #self.task_dom2 = nn.LazyLinear(2)
-        self.task_cl = nn.LazyLinear(num_classes)
-        #self.task_cl = FC_Classifier(256, num_classes)
-        
-        self.task_cl2 = nn.LazyLinear(num_classes)
-
-        self.task_cl3 = FC_Classifier(256, num_classes)
-        '''
-        self.task_cl3 = nn.LazyLinear(num_classes)
-        self.task_cl4 = nn.LazyLinear(num_classes)
-        self.task_cl5 = nn.LazyLinear(num_classes)
-        '''
-        
-        self.discr = FC_Classifier(256, 2)
-
-        self.projF = ProjHead(256)
-        self.projS = ProjHead(256)
-
-    def forward(self, x, lambda_val=1.):
-        f_x, s_x = x
-        f_emb_inv = self.first_enc_inv(f_x).squeeze()
-        f_emb_spec = self.first_enc_spec(f_x).squeeze()
-        s_emb_inv = self.second_enc_inv(s_x).squeeze()
-        s_emb_spec = self.second_enc_spec(s_x).squeeze()
-        
-        nfeat = f_emb_inv.shape[1]//2
-        #print("nfeat forward %d"%nfeat)
-        
-        f_shared_discr = self.projF(f_emb_inv)
-        s_shared_discr = self.projS(s_emb_inv)
-
-        f_domain_discr = f_emb_spec[:,0:nfeat]
-        s_domain_discr = s_emb_spec[:,0:nfeat]
-        f_domain_useless = f_emb_spec[:,nfeat::]
-        s_domain_useless = s_emb_spec[:,nfeat::]
-
-        f_task_feat = torch.cat([f_shared_discr,f_domain_discr],dim=1)
-        s_task_feat = torch.cat([s_shared_discr,s_domain_discr],dim=1)
-        
-        #print("task_feat forward ",f_task_feat.shape)
-
-        pred_f_emb_dom = torch.cat( [self.task_dom(f_domain_discr), self.task_dom(f_domain_useless)], dim=0)
-        pred_s_emb_dom = torch.cat( [self.task_dom(s_domain_discr), self.task_dom(s_domain_useless)], dim=0)
-
-
-        #pred_emb_dom = torch.cat([f_domain_discr,f_domain_useless],dim=0)
-        #pred_emb_dom = torch.cat([s_domain_discr,s_domain_useless],dim=0)
-
-        return f_shared_discr, s_shared_discr, f_domain_discr, f_domain_useless, s_domain_discr, s_domain_useless, \
-               pred_f_emb_dom, pred_s_emb_dom, \
-               self.task_cl(f_task_feat), self.task_cl2(s_task_feat), \
-               self.discr(grad_reverse(f_shared_discr,lambda_val)), self.discr(grad_reverse(s_shared_discr,lambda_val)), \
-               self.task_cl3(f_shared_discr), self.task_cl3(s_shared_discr), \
-               self.task_cl3(f_domain_discr),  self.task_cl3(s_domain_discr)
-        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_task_feat), self.task_cl2(s_task_feat), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
-
-        #return f_emb_inv, f_emb_spec, s_emb_inv, s_emb_spec, self.task_dom(f_emb_spec), self.task_dom(s_emb_spec), self.task_cl(f_emb_inv), self.task_cl2(s_emb_inv), self.discr(grad_reverse(f_emb_inv,lambda_val)), self.discr(grad_reverse(s_emb_inv,lambda_val))
-
-    def pred_firstEnc(self, x):        
-        emb_inv = self.first_enc_inv(x).squeeze()
-        nfeat = emb_inv.shape[1]//2
-        emb_inv = self.projF(emb_inv)
-        emb_spec = self.first_enc_spec(x).squeeze()
-        
-        #print("nfeat pred_firstEnc %d"%nfeat)
-        task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
-        #print("task_feat pred_firstEnc ",task_feat.shape)
-        return self.task_cl(task_feat)
-        #return self.task_cl(emb_inv)
-
-    def pred_secondEnc(self, x):        
-        emb_inv = self.second_enc_inv(x).squeeze()
-        nfeat = emb_inv.shape[1]//2
-        emb_inv = self.projS(emb_inv)
-        emb_spec = self.second_enc_spec(x).squeeze()
-        
-        task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
-        return self.task_cl2(task_feat)
-        #return self.task_cl2(emb_inv)
-
-
-
-
 class CrossSourceModelGRLv10(torch.nn.Module):
     def __init__(self, input_channel_first=4, input_channel_second=2, num_classes=10, f_encoder='image', s_encoder='image'):
         super(CrossSourceModelGRLv10, self).__init__()
@@ -301,6 +175,35 @@ class CrossSourceModelGRLv10(torch.nn.Module):
         task_feat = torch.cat([emb_inv,emb_spec[:,0:nfeat]],dim=1)
         return self.task_cl2(task_feat)
         #return self.task_cl2(emb_inv)
+    
+    def getEmb_first(self, x):
+        emb_inv = self.first_enc_inv(x).squeeze()
+        emb_spec = self.first_enc_spec(x).squeeze()
+
+        nfeat = emb_inv.shape[1]//2
+        
+        shared_discr = self.projF(emb_inv)
+        domain_discr = emb_spec[:,0:nfeat]
+        domain_useless = emb_spec[:,nfeat::]
+        task_feat = torch.cat([shared_discr,domain_discr],dim=1)
+
+        # domain invariant, domain informative, domain irrelevant
+        return shared_discr, task_feat, domain_useless
+
+
+    def getEmb_second(self, x):
+        emb_inv = self.second_enc_inv(x).squeeze()
+        emb_spec = self.second_enc_spec(x).squeeze()
+
+        nfeat = emb_inv.shape[1]//2
+        
+        shared_discr = self.projF(emb_inv)
+        domain_discr = emb_spec[:,0:nfeat]
+        domain_useless = emb_spec[:,nfeat::]
+        task_feat = torch.cat([shared_discr,domain_discr],dim=1)
+
+        # domain invariant, domain informative, domain irrelevant
+        return shared_discr, task_feat, domain_useless
 
 
 
