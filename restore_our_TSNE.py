@@ -46,7 +46,8 @@ def getEmbs(model, dataloader, device, first=True):
     emb_inv = []
     emb_task = []
     emb_irrelevant = []
-    for x_batch, y_batch in dataloader:
+    for x_batch, _ in dataloader:
+        x_batch = x_batch.to(device)
         temp_emb_inv = None
         temp_emb_task = None
         temp_emb_irrelevant = None
