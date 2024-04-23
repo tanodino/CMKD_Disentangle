@@ -30,7 +30,7 @@ def plotEmb(emb, test_labels, outFileName):
 
 
     #X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=30).fit_transform(pca_result)
-    X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=30).fit_transform(emb)
+    X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=3).fit_transform(emb)
     plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping)#, s=area, c=colors, alpha=0.5)
     plt.savefig(outFileName+".png")
 
