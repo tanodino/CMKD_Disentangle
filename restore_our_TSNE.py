@@ -108,7 +108,7 @@ first_data = np.load("%s/%s_data_normalized.npy"%(dir_,first_prefix))
 second_data = np.load("%s/%s_data_normalized.npy"%(dir_,second_prefix))
 labels = np.load("%s/labels.npy"%dir_)
 
-n_samples = 50
+n_samples = 100
 
 
 
