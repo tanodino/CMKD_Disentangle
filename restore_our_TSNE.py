@@ -19,8 +19,8 @@ def plotEmb(emb, test_labels, outFileName):
 
     colorMapping = [colors[i.astype("int")] for i in test_labels]
 
-    #scaler = MinMaxScaler()
-    #emb = scaler.fit_transform(emb)
+    scaler = MinMaxScaler()
+    emb = scaler.fit_transform(emb)
 
     #pca = PCA(n_components=50)
     #pca_result = pca.fit_transform(emb)
