@@ -19,9 +19,8 @@ def plotEmb(emb, test_labels, dom_labels, outFileName):
     colors = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'magenta', 'teal', 'maroon']
     markers = ["D", "*"]
     colorMapping = [colors[i.astype("int")] for i in test_labels]
-    domainMapping = [markers[el.astype("int")] for el in dom_labels]
-    scaler = MinMaxScaler()
-    emb = scaler.fit_transform(emb)
+    #scaler = MinMaxScaler()
+    #emb = scaler.fit_transform(emb)
 
     #pca = PCA(n_components=50)
     #pca_result = pca.fit_transform(emb)
