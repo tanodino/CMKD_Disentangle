@@ -149,9 +149,9 @@ for i in range(5):
     emb_irrelevant = np.concatenate([f_emb_irrelevant,s_emb_irrelevant])
     extended_test_labels = np.concatenate([test_labels, test_labels])
 
-    plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
-    plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
-    plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_inv, extended_test_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
+    plotEmb(emb_task, extended_test_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_irrelevant, extended_test_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
 
 
 
