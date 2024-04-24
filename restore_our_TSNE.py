@@ -141,16 +141,23 @@ for i in range(5):
 
     test_f_data, test_s_data, test_labels = selectRandomSamples(test_f_data, test_s_data, test_labels, n_samples)
     
-    emb_inv, emb_task, emb_irrelevant = getEmbeddings(model, model_weights_fileName_f, test_f_data, test_labels, first=True)
+    f_emb_inv, f_emb_task, f_emb_irrelevant = getEmbeddings(model, model_weights_fileName_f, test_f_data, test_labels, first=True)
+    s_emb_inv, s_emb_task, s_emb_irrelevant = getEmbeddings(model, model_weights_fileName_s, test_s_data, test_labels, first=False)
+
+    emb_inv = np.concatenate([f_emb_inv,s_emb_inv])
+    emb_task = np.concatenate([f_emb_task,s_emb_task])
+    emb_irrelevant = np.concatenate([f_emb_irrelevant,s_emb_irrelevant])
+    extended_test_labels = np.concatenate([test_labels, test_labels])
 
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
     plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
     plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
 
 
-    emb_inv, emb_task, emb_irrelevant = getEmbeddings(model, model_weights_fileName_s, test_s_data, test_labels, first=False)
 
+    '''
     plotEmb(emb_inv, test_labels, "%s_%s_inv_%d"%(dir_,second_prefix, i) )
     plotEmb(emb_task, test_labels, "%s_%s_domDiscr_%d"%(dir_,second_prefix, i))
     plotEmb(emb_irrelevant, test_labels, "%s_%s_domIrrelevant_%d"%(dir_,second_prefix, i))
+    '''
     exit()
