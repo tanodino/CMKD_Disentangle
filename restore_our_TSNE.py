@@ -11,6 +11,7 @@ from sklearn.utils import shuffle
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import matplotlib
 from sklearn.preprocessing import MinMaxScaler
 
 def plotEmb(emb, test_labels, dom_labels, outFileName):
@@ -31,7 +32,11 @@ def plotEmb(emb, test_labels, dom_labels, outFileName):
 
     #X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=30).fit_transform(pca_result)
     X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=3).fit_transform(emb)
-    plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping, marker= domainMapping)#, s=area, c=colors, alpha=0.5)
+    half = X_embedded.shape[0] // 2
+    
+    plt.scatter(X_embedded[0:half,0], X_embedded[0:half,1], c = colorMapping[0:half], marker= "D")#, s=area, c=colors, alpha=0.5)
+    plt.scatter(X_embedded[half::,0], X_embedded[half::,1], c = colorMapping[half::], marker= "*")#, s=area, c=colors, alpha=0.5)
+    
     plt.savefig(outFileName+".png")
     plt.clf()
 
