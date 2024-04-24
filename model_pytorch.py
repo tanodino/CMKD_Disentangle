@@ -212,8 +212,8 @@ class CrossSourceModelGRLv10(torch.nn.Module):
 
         # domain invariant, domain informative, domain irrelevant
         #return shared_discr, task_feat, domain_useless
-        #return shared_discr, domain_discr, domain_useless
-        return shared_discr, domain_discr, task_feat
+        return shared_discr, domain_discr, domain_useless
+        #return shared_discr, domain_discr, task_feat
 
     def getEmb_second(self, x):
         emb_inv = self.second_enc_inv(x).squeeze()
@@ -228,8 +228,8 @@ class CrossSourceModelGRLv10(torch.nn.Module):
 
         # domain invariant, domain informative, domain irrelevant
         #return shared_discr, task_feat, domain_useless
-        #return shared_discr, domain_discr, domain_useless
-        return shared_discr, domain_discr, task_feat
+        return shared_discr, domain_discr, domain_useless
+        #return shared_discr, domain_discr, task_feat
 
 
 class CrossSourceModelGRLv9(torch.nn.Module):
