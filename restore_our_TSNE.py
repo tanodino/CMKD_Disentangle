@@ -13,12 +13,12 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
-def plotEmb(emb, test_labels, outFileName):
+def plotEmb(emb, test_labels, dom_labels, outFileName):
 
     colors = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'magenta', 'teal', 'maroon']
-
+    markers = ["D", "*"]
     colorMapping = [colors[i.astype("int")] for i in test_labels]
-
+    domainMapping = [markers[el.astype("int")] for el in dom_labels]
     scaler = MinMaxScaler()
     emb = scaler.fit_transform(emb)
 
@@ -31,7 +31,7 @@ def plotEmb(emb, test_labels, outFileName):
 
     #X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=30).fit_transform(pca_result)
     X_embedded = TSNE(n_components=2, learning_rate='auto',init='random', perplexity=3).fit_transform(emb)
-    plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping)#, s=area, c=colors, alpha=0.5)
+    plt.scatter(X_embedded[:,0], X_embedded[:,1], c = colorMapping, marker= domainMapping)#, s=area, c=colors, alpha=0.5)
     plt.savefig(outFileName+".png")
     plt.clf()
 
@@ -148,10 +148,11 @@ for i in range(5):
     emb_task = np.concatenate([f_emb_task,s_emb_task])
     emb_irrelevant = np.concatenate([f_emb_irrelevant,s_emb_irrelevant])
     extended_test_labels = np.concatenate([test_labels, test_labels])
+    dom_labels = np.concatenate([np.zeros(test_labels.shape[0]), np.ones(test_labels.shape[0])])
 
-    plotEmb(emb_inv, extended_test_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
-    plotEmb(emb_task, extended_test_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
-    plotEmb(emb_irrelevant, extended_test_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_inv, extended_test_labels, dom_labels, "%s_%s_inv_%d"%(dir_,first_prefix, i) )
+    plotEmb(emb_task, extended_test_labels, dom_labels, "%s_%s_domDiscr_%d"%(dir_,first_prefix, i))
+    plotEmb(emb_irrelevant, extended_test_labels, dom_labels, "%s_%s_domIrrelevant_%d"%(dir_,first_prefix, i))
 
 
 
