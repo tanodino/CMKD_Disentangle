@@ -30,7 +30,7 @@ The dataset is assumed to be stored according to the format below:
 - First modality dataset: "`dir`/`first_prefix`_data_normalized.npy"
 - Second modality dataset: "`dir`/`second_prefix`_data_normalized.npy"
 
-Additionally, some files containing the list of indexes for train/validation/test split is required in the following format:
+Additionally, files containing a list of indexes for train/validation/test split is required in the format below:
 - Train: "`dir`/train_idx.npy"
 - Validation: "`dir`/valid_idx.npy"
 - Test: "`dir`/test_idx.npy"
