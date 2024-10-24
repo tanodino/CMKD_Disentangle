@@ -1,6 +1,6 @@
 # DisCoM-KD: Cross-Modal Knowledge Distillation via Disentanglement Representation and Adversarial Learning
 
-This repositoru is associated to the following BMVC 2024 publication:
+This repository is associated to the following BMVC 2024 publication:
 
 > D. Ienco, C. F. Dantas. Discom-kd: Cross-modal knowledge distillation via disentanglement representation and adversarial learning. BMVC 2024. [ArXiv link.](https://arxiv.org/abs/2408.07080)
 
@@ -9,10 +9,10 @@ This repositoru is associated to the following BMVC 2024 publication:
 ![DisCoM-KD main architecture](Arch.png)
 
 **Considered setting:** Cross-modal knowledge distillation (CMKD) refers to the scenario in which a learning framework must handle training and test data that exhibit a modality mismatch, more precisely, training and test data do not cover the same set of data modalities. Traditional approaches for CMKD are based on a teacher/student paradigm where a teacher is trained on multi-modal data with the aim to successively distill knowledge from a multi-modal teacher to a single-modal student.
-Some limitations of the traditional paradigm include: 1) the computational burden associated with training a multi-modal teacher model, followed by multiple single-modal models that need to be trained separately. 
+Some limitations of the traditional paradigm include: 1) the computational burden associated with training a multi-modal teacher model, followed by multiple single-modal models that need to be trained separately; 2) Training samples need to be paired w.r.t. the different modalities.
 
 
-**Proposed approach:** Here we propose an alternative strategy to the standard teacher/student paradigm that: 1) **Avoids** the set up of a multi-modal **teacher model** and 2) **simultaneously** learns all single-modal classifiers by exploiting **modalities interaction/collaboration** to structure each single-modality network embedding manifold.
+**Proposed approach:** Here we propose an alternative strategy to the standard teacher/student paradigm that: 1) **Avoids** the set up of a multi-modal **teacher model** and 2) **simultaneously** learns all single-modal classifiers by exploiting **modalities interaction/collaboration** to structure each single-modality network embedding manifold. 3) Modalities don't need to be paired at the sample level in training dataset.
 
 
 ## Code organization
