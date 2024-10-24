@@ -2,7 +2,7 @@
 
 This repository is associated to the following BMVC 2024 publication:
 
-> D. Ienco, C. F. Dantas. Discom-kd: Cross-modal knowledge distillation via disentanglement representation and adversarial learning. BMVC 2024. [ArXiv link.](https://arxiv.org/abs/2408.07080)
+> D. Ienco, C. F. Dantas. DisCoM-KD: Cross-modal knowledge distillation via disentanglement representation and adversarial learning. BMVC 2024. [ArXiv link.](https://arxiv.org/abs/2408.07080)
 
 
 ## Method description 
